@@ -602,3 +602,96 @@ a { color: inherit; }
   .call { padding: 14px 15px 14px 44px; }
   .chap-stats { gap: 16px; }
 }
+
+/* ============================================================
+   SYLLABUS HUB  (chapter → sections → lessons)
+   ============================================================ */
+.syllabus-intro {
+  display: flex; align-items: flex-start; gap: 11px;
+  background: var(--brand-tint); border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--line));
+  border-radius: var(--radius); padding: 13px 16px; margin-bottom: 26px;
+  color: var(--ink-soft); font-size: .9rem; line-height: 1.5;
+}
+.syllabus-intro svg { width: 18px; height: 18px; flex: none; color: var(--brand); margin-top: 2px; }
+.syllabus-intro b { color: var(--ink); font-weight: 600; }
+
+.lsec {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
+  overflow: hidden; scroll-margin-top: calc(var(--header-h) + 70px);
+}
+.lsec + .lsec { margin-top: 18px; }
+.lsec-head {
+  position: relative; display: flex; align-items: center; gap: 13px;
+  padding: 17px 20px 16px; border-bottom: 1px solid var(--line-soft);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, var(--surface)), var(--surface));
+}
+.lsec-num {
+  font-family: var(--f-mono); font-weight: 600; font-size: .8rem; letter-spacing: .06em;
+  color: var(--accent); flex: none;
+  background: color-mix(in srgb, var(--accent) 13%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
+  padding: 5px 10px; border-radius: 8px; min-width: 42px; text-align: center;
+}
+.lsec-titles { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lsec-title {
+  font-family: var(--f-display); font-weight: 600; font-size: 1.1rem;
+  letter-spacing: -.01em; color: var(--ink);
+}
+.lsec-sub { font-family: var(--f-mono); font-size: .7rem; color: var(--ink-faint); letter-spacing: .03em; }
+.lensbar {
+  display: flex; gap: 2px; height: 7px; margin-left: auto; flex: none;
+  width: clamp(80px, 18vw, 150px);
+}
+.lensbar i { flex: 1; background: var(--seg, var(--brand)); border-radius: 2px; }
+
+.lrow {
+  display: flex; align-items: center; gap: 13px;
+  padding: 12px 20px; border-top: 1px solid var(--line-soft);
+  color: var(--ink); text-decoration: none; transition: background .14s;
+}
+.lsec-head + .lrow { border-top: none; }
+.lrow:hover { background: var(--surface-2); }
+.lrow-ticks { display: flex; gap: 3px; flex: none; }
+.lrow-ticks i { width: 3px; height: 19px; border-radius: 2px; background: var(--brand); }
+.lrow-title { font-weight: 500; font-size: .95rem; line-height: 1.3; flex: 1; min-width: 0; }
+.lrow-state {
+  font-family: var(--f-mono); font-size: .6rem; letter-spacing: .12em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 999px; flex: none; white-space: nowrap;
+}
+.lrow-state.done { color: var(--embryo); background: color-mix(in srgb, var(--embryo) 15%, transparent); }
+.lrow-state.prog { color: var(--hy);    background: color-mix(in srgb, var(--hy) 18%, transparent); }
+.lrow-state.new  { color: var(--ink-faint); background: var(--surface-3); }
+.lrow-arrow { width: 15px; height: 15px; color: var(--ink-faint); flex: none; transition: transform .14s, color .14s; }
+.lrow:hover .lrow-arrow { transform: translateX(2px); color: var(--brand); }
+
+/* filter dimming on the hub */
+.lrow.dim { opacity: .3; }
+.lrow.dim .lrow-ticks i { filter: grayscale(.65); }
+.lsec.dim-sec { opacity: .48; }
+.lsec.dim-sec .lensbar i { filter: grayscale(.55); }
+
+@media (max-width: 560px) {
+  .lsec-head { flex-wrap: wrap; padding: 14px 14px 13px; }
+  .lensbar { margin-left: 0; order: 3; width: 100%; flex-basis: 100%; }
+  .lrow { padding: 11px 14px; gap: 11px; }
+  .lrow-state { display: none; }
+  .lrow-title { font-size: .92rem; }
+}
+
+/* lesson prev / next navigation */
+.lesson-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 44px; }
+.lnav {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--surface); text-decoration: none; box-shadow: var(--shadow-sm);
+  transition: border-color .15s, transform .15s;
+}
+.lnav:hover { border-color: color-mix(in srgb, var(--brand) 45%, var(--line)); transform: translateY(-1px); }
+.lnav.next { text-align: right; }
+.lnav-k { font-family: var(--f-mono); font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-faint); }
+.lnav-t { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; color: var(--ink); letter-spacing: -.01em; }
+@media (max-width: 560px) {
+  .lesson-nav { grid-template-columns: 1fr; }
+  .lnav.next { text-align: left; }
+}

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cardiology — MedLens · USMLE Step 1</title>
-<meta name="description" content="Cardiology for Step 1, presented through discipline lenses: anatomy, physiology, pathology, pharmacology and embryology.">
+<title>Cardiology &mdash; MedLens &middot; USMLE Step 1</title>
+<meta name="description" content="Cardiology for Step 1 as a discipline-lensed syllabus: 8 sections, 42 lessons, each tagged by the kind of knowledge it tests.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -12,7 +12,6 @@
 </head>
 <body>
 
-<!-- top bar -->
 <header class="topbar">
   <a class="brand" href="index.html">
     <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
@@ -29,33 +28,32 @@
   </button>
 </header>
 
-<!-- chapter header -->
 <section class="chapthead">
   <div class="wrap">
-    <p class="eyebrow">Chapter 07 · Organ Systems</p>
+    <p class="eyebrow">Chapter 07 &middot; Organ Systems</p>
     <h1>Cardiology</h1>
-    <p class="sub">From the resting membrane to the failing ventricle — the cardiovascular system seen through every lens Step 1 will test you on.</p>
+    <p class="sub">Eight sections, from chamber anatomy to endocarditis &mdash; every lesson tagged by the lens it lives in, so you can see what kind of thinking each block of the chapter demands.</p>
     <div class="chap-stats">
-      <div class="stat"><div class="n">5</div><div class="l">Topics</div></div>
-      <div class="stat"><div class="n">38</div><div class="l">Lessons</div></div>
-      <div class="stat"><div class="n">5</div><div class="l">Disciplines</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">Sections</div></div>
+      <div class="stat"><div class="n">42</div><div class="l">Lessons</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">Disciplines</div></div>
       <div class="stat"><div class="n">High</div><div class="l">Yield density</div></div>
     </div>
-    <div class="progress-line"><i style="width:51%"></i></div>
-    <p class="progress-cap">51% complete · 19 of 38 lessons</p>
+    <div class="progress-line"><i style="width:26%"></i></div>
+    <p class="progress-cap">26% complete &middot; 11 of 42 lessons</p>
   </div>
 </section>
 
-<!-- discipline filter -->
 <div class="filterbar">
   <div class="wrap">
-    <div class="chips" role="group" aria-label="Filter content by discipline">
+    <div class="chips" role="group" aria-label="Filter lessons by discipline">
       <button class="chip all" data-filter="all" aria-pressed="true">All lenses</button>
       <button class="chip" data-filter="anatomy" style="--accent:var(--anatomy)" aria-pressed="false"><i class="dot"></i>Anatomy</button>
       <button class="chip" data-filter="embryo" style="--accent:var(--embryo)" aria-pressed="false"><i class="dot"></i>Embryology</button>
       <button class="chip" data-filter="physio" style="--accent:var(--physio)" aria-pressed="false"><i class="dot"></i>Physiology</button>
       <button class="chip" data-filter="patho" style="--accent:var(--patho)" aria-pressed="false"><i class="dot"></i>Pathology</button>
       <button class="chip" data-filter="pharm" style="--accent:var(--pharm)" aria-pressed="false"><i class="dot"></i>Pharmacology</button>
+      <button class="chip" data-filter="micro" style="--accent:var(--micro)" aria-pressed="false"><i class="dot"></i>Microbiology</button>
     </div>
   </div>
 </div>
@@ -63,420 +61,376 @@
 <div class="wrap">
 <div class="chapbody">
 
-  <!-- TOC -->
-  <nav class="toc" data-open="false" aria-label="Topics in this chapter">
+  <nav class="toc" data-open="false" aria-label="Sections in this chapter">
     <button class="toc-mobile-toggle" aria-expanded="false">
-      Topics in this chapter
+      Sections in this chapter
       <svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <div class="toc-inner">
-      <div class="toc-h">On this page</div>
+      <div class="toc-h">Sections</div>
       <ol>
-        <li><a href="#anatomy">1 · Anatomy &amp; circulation</a></li>
-        <li><a href="#ap">2 · Action potentials</a></li>
-        <li><a href="#co">3 · Cardiac output</a></li>
-        <li><a href="#hf">4 · Heart failure</a></li>
-        <li><a href="#chd">5 · Congenital disease</a></li>
+        <li><a href="#s1">I &middot; Anatomy &amp; Physiology</a></li>
+        <li><a href="#s2">II &middot; Ischemic Heart Disease</a></li>
+        <li><a href="#s3">III &middot; Arrhythmias &amp; EKG</a></li>
+        <li><a href="#s4">IV &middot; Heart Sounds &amp; Murmurs</a></li>
+        <li><a href="#s5">V &middot; Heart Failure</a></li>
+        <li><a href="#s6">VI &middot; Congenital Heart Disease</a></li>
+        <li><a href="#s7">VII &middot; Hypertension</a></li>
+        <li><a href="#s8">VIII &middot; Other Cardiac Disease</a></li>
       </ol>
     </div>
   </nav>
 
-  <!-- CONTENT -->
-  <div class="content">
+  <main class="chapmain">
+    <div class="syllabus-intro reveal">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <div>Each lesson carries the <b>lens</b> of the knowledge it tests. The bar beside every section title is its <b>discipline signature</b> &mdash; one stripe per lesson. Tap a lens above to light up just that discipline across all eight sections.</div>
+    </div>
 
-    <!-- ===================== TOPIC 1: ANATOMY ===================== -->
-    <article class="topic reveal" id="anatomy">
-      <header class="topic-head">
-        <span class="topic-kicker">Topic 1</span>
-        <h2>Cardiac anatomy &amp; circulation</h2>
-        <div class="lensmap">
-          <span style="--c:var(--anatomy)">Anatomy</span>
-          <span style="--c:var(--physio)">Physiology</span>
-        </div>
-      </header>
-
-      <div class="glance">
-        <div class="glance-h">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-          At a glance
-        </div>
-        <ul>
-          <li>Blood flows <strong>body → RA → RV → lungs → LA → LV → body</strong>, with a valve guarding every exit.</li>
-          <li>The <strong>left coronary artery</strong> supplies the anterior wall and most of the left ventricle; the <strong>RCA</strong> supplies the inferior wall and (usually) the SA &amp; AV nodes.</li>
-          <li>Two AV valves (tricuspid, mitral) and two semilunar valves (pulmonic, aortic).</li>
-        </ul>
+  <section class="lsec reveal" id="s1" style="--accent:var(--physio)">
+    <div class="lsec-head">
+      <span class="lsec-num">I</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Anatomy &amp; Physiology</div>
+        <div class="lsec-sub">9 lessons &middot; 6 done</div>
       </div>
-
-      <div class="lens anatomy" data-lens="anatomy">
-        <span class="lens-label"><i class="pin"></i>Anatomy</span>
-        <h4>The four chambers &amp; the path of blood</h4>
-        <p>The heart is two pumps in series. The <span class="key">right heart</span> handles deoxygenated blood at low pressure; the <span class="key">left heart</span> drives oxygenated blood into the systemic circulation at high pressure — which is why the <strong>left ventricle wall is roughly three times thicker</strong> than the right.</p>
-
-        <figure class="figure">
-          <div class="canvas">
-            <svg viewBox="0 0 640 410" role="img" aria-label="Schematic of blood flow through the four heart chambers and valves">
-              <!-- chambers -->
-              <rect x="118" y="64" width="170" height="96" rx="14" fill="color-mix(in srgb, var(--physio) 12%, var(--surface))" stroke="var(--physio)" stroke-width="2"/>
-              <rect x="118" y="248" width="170" height="118" rx="14" fill="color-mix(in srgb, var(--physio) 12%, var(--surface))" stroke="var(--physio)" stroke-width="2"/>
-              <rect x="352" y="64" width="170" height="96" rx="14" fill="color-mix(in srgb, var(--patho) 12%, var(--surface))" stroke="var(--patho)" stroke-width="2"/>
-              <rect x="352" y="248" width="170" height="118" rx="14" fill="color-mix(in srgb, var(--patho) 12%, var(--surface))" stroke="var(--patho)" stroke-width="2"/>
-              <text x="203" y="106" text-anchor="middle" class="dlabel-b">RA</text>
-              <text x="203" y="126" text-anchor="middle" class="dlabel">right atrium</text>
-              <text x="203" y="300" text-anchor="middle" class="dlabel-b">RV</text>
-              <text x="203" y="320" text-anchor="middle" class="dlabel">right ventricle</text>
-              <text x="437" y="106" text-anchor="middle" class="dlabel-b">LA</text>
-              <text x="437" y="126" text-anchor="middle" class="dlabel">left atrium</text>
-              <text x="437" y="300" text-anchor="middle" class="dlabel-b">LV</text>
-              <text x="437" y="320" text-anchor="middle" class="dlabel">left ventricle</text>
-
-              <!-- arrows down (AV valves) -->
-              <path d="M203,160 V248" fill="none" stroke="var(--ink-faint)" stroke-width="2.5" marker-end="url(#ah)"/>
-              <path d="M437,160 V248" fill="none" stroke="var(--ink-faint)" stroke-width="2.5" marker-end="url(#ah)"/>
-              <text x="213" y="208" class="dlabel">tricuspid</text>
-              <text x="447" y="208" class="dlabel">mitral</text>
-
-              <!-- in/out vessels -->
-              <path d="M40,108 H118" fill="none" stroke="var(--physio)" stroke-width="2.5" marker-end="url(#ahb)"/>
-              <text x="40" y="96" class="dlabel">SVC / IVC</text>
-              <path d="M203,366 V392 H560 V160" fill="none" stroke="var(--patho)" stroke-width="2.5" marker-end="url(#ahr)" stroke-dasharray="0"/>
-              <text x="262" y="386" class="dlabel">aorta → body</text>
-              <path d="M118,300 H60 V108" fill="none" stroke="var(--physio)" stroke-width="0"/>
-
-              <!-- pulmonary loop -->
-              <path d="M288,300 H318 V36 H352 V64" fill="none" stroke="var(--ink-faint)" stroke-width="2.5" marker-end="url(#ah)"/>
-              <text x="304" y="28" class="dlabel">→ lungs →</text>
-              <text x="304" y="48" class="dlabel">pulmonic / PV</text>
-              <text x="437" y="392" class="dlabel" text-anchor="middle">aortic valve</text>
-
-              <defs>
-                <marker id="ah" markerWidth="9" markerHeight="9" refX="5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--ink-faint)"/></marker>
-                <marker id="ahb" markerWidth="9" markerHeight="9" refX="5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--physio)"/></marker>
-                <marker id="ahr" markerWidth="9" markerHeight="9" refX="5" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="var(--patho)"/></marker>
-              </defs>
-            </svg>
-          </div>
-          <figcaption><b>Fig 1</b><span>Blood path through the chambers. Blue = deoxygenated (right heart); red = oxygenated (left heart). Every exit is valve-guarded.</span></figcaption>
-        </figure>
-
-        <div class="call clinical">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3v6a6 6 0 0 0 12 0V3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 15v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-          <div class="call-t">Clinical correlation</div>
-          <p>Listen where the blood is <em>heading</em>, not where the valve sits: the <strong>aortic</strong> valve is loudest at the right 2nd intercostal space, <strong>pulmonic</strong> at the left 2nd, <strong>mitral</strong> at the apex.</p>
-        </div>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--anatomy)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i></div>
+    </div>
+    <a class="lrow" data-lens="anatomy" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--anatomy)"></i></span>
+      <span class="lrow-title">Cardiac Anatomy</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Cardiac Physiology</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">CV Response to Exercise</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Blood Flow Mechanics</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Regulation of Blood Pressure</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio patho" href="pv-loops.html">
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Pressure&ndash;Volume (PV) Loops</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Wiggers&rsquo; Diagram</span>
+      <span class="lrow-state prog">Active</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Venous Pressure Tracings</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Starling Curve</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s2" style="--accent:var(--patho)">
+    <div class="lsec-head">
+      <span class="lsec-num">II</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Ischemic Heart Disease</div>
+        <div class="lsec-sub">4 lessons &middot; 2 done</div>
       </div>
-
-      <div class="lens anatomy" data-lens="anatomy">
-        <span class="lens-label"><i class="pin"></i>Anatomy</span>
-        <h4>Coronary supply</h4>
-        <ul class="tidy">
-          <li><b>LAD</b> (left anterior descending) — anterior wall + anterior ⅔ of septum. The most commonly occluded vessel.</li>
-          <li><b>LCX</b> (left circumflex) — lateral wall of the LV.</li>
-          <li><b>RCA</b> (right coronary) — inferior wall; supplies the <span class="key">SA and AV nodes</span> in ~90% of people (right-dominant).</li>
-        </ul>
-        <div class="call pitfall">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 17v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-          <div class="call-t">Don't confuse</div>
-          <p>The coronaries fill during <strong>diastole</strong>, not systole — tachycardia shortens diastole and can starve the myocardium even when cardiac output looks fine.</p>
-        </div>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i></div>
+    </div>
+    <a class="lrow" data-lens="patho physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Cardiac Ischemia</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho pharm" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--pharm)"></i></span>
+      <span class="lrow-title">STEMI</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Unstable Angina / NSTEMI</span>
+      <span class="lrow-state prog">Active</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Stable Angina</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s3" style="--accent:var(--physio)">
+    <div class="lsec-head">
+      <span class="lsec-num">III</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Arrhythmias &amp; EKG</div>
+        <div class="lsec-sub">8 lessons &middot; 2 done</div>
       </div>
-    </article>
-
-    <!-- ===================== TOPIC 2: ACTION POTENTIALS ===================== -->
-    <article class="topic reveal" id="ap">
-      <header class="topic-head">
-        <span class="topic-kicker">Topic 2</span>
-        <h2>Cardiac action potentials &amp; conduction</h2>
-        <div class="lensmap">
-          <span style="--c:var(--physio)">Physiology</span>
-          <span style="--c:var(--pharm)">Pharmacology</span>
-        </div>
-      </header>
-
-      <div class="glance">
-        <div class="glance-h">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-          At a glance
-        </div>
-        <ul>
-          <li>Ventricular myocytes have <strong>5 phases (0–4)</strong>; the plateau (phase 2) is the signature of cardiac muscle.</li>
-          <li>Pacemaker (SA/AV node) cells have <strong>no fast Na⁺ channels</strong> — their upstroke is driven by <strong>Ca²⁺</strong>, and phase 4 slow depolarization sets the heart rate.</li>
-          <li>Conduction order: <span class="hy-term">SA node → AV node → bundle of His → Purkinje fibers</span>.</li>
-        </ul>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--physio)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--pharm)"></i></div>
+    </div>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">EKG Basics</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">High-Yield EKGs</span>
+      <span class="lrow-state prog">Active</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio pharm" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i><i style="background:var(--pharm)"></i></span>
+      <span class="lrow-title">Action Potentials</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">AV &amp; Bundle Branch Blocks</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Atrial Fibrillation</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">AVNRT</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">WPW (Wolff&ndash;Parkinson&ndash;White)</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="pharm" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--pharm)"></i></span>
+      <span class="lrow-title">Antiarrhythmic Drugs</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s4" style="--accent:var(--physio)">
+    <div class="lsec-head">
+      <span class="lsec-num">IV</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Heart Sounds &amp; Murmurs</div>
+        <div class="lsec-sub">2 lessons &middot; 1 done</div>
       </div>
-
-      <div class="lens physio" data-lens="physio">
-        <span class="lens-label"><i class="pin"></i>Physiology</span>
-        <h4>The ventricular action potential</h4>
-        <p>Each phase is one ion telling a story. The <strong>plateau</strong> — inward <span class="lab">Ca²⁺</span> balancing outward <span class="lab">K⁺</span> — is what gives cardiac muscle its long refractory period and prevents tetany.</p>
-
-        <figure class="figure">
-          <div class="canvas">
-            <svg viewBox="0 0 660 320" role="img" aria-label="Ventricular cardiac action potential plotted as membrane potential against time, showing phases 0 through 4">
-              <line x1="66" y1="36" x2="66" y2="272" stroke="var(--line)" stroke-width="1.5"/>
-              <line x1="66" y1="272" x2="628" y2="272" stroke="var(--line)" stroke-width="1.5"/>
-              <line x1="66" y1="112" x2="628" y2="112" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 5"/>
-              <text x="58" y="66" text-anchor="end" class="daxis">+20</text>
-              <text x="58" y="116" text-anchor="end" class="daxis">0</text>
-              <text x="58" y="256" text-anchor="end" class="daxis">−90</text>
-              <text x="26" y="168" class="daxis" transform="rotate(-90 26 168)">Membrane potential (mV)</text>
-              <text x="350" y="300" text-anchor="middle" class="daxis">time →</text>
-
-              <path d="M70,252 L120,252 L137,60 L151,56 L162,92 C232,100 300,102 345,108 C388,114 418,176 442,252 L620,252"
-                    fill="none" stroke="var(--physio)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
-
-              <!-- phase numbers -->
-              <text x="120" y="48" text-anchor="middle" class="dnum">0</text>
-              <text x="160" y="44" text-anchor="middle" class="dnum">1</text>
-              <text x="250" y="92" text-anchor="middle" class="dnum">2</text>
-              <text x="436" y="150" text-anchor="middle" class="dnum">3</text>
-              <text x="545" y="244" text-anchor="middle" class="dnum">4</text>
-
-              <!-- ion notes -->
-              <text x="92" y="150" class="dlabel">Na⁺ in</text>
-              <text x="250" y="134" text-anchor="middle" class="dlabel">Ca²⁺ in · K⁺ out</text>
-              <text x="476" y="196" class="dlabel">K⁺ out</text>
-              <text x="545" y="266" text-anchor="middle" class="dlabel">resting K⁺</text>
-            </svg>
-          </div>
-          <figcaption><b>Fig 2</b><span>Phase 0 = fast Na⁺ influx · 1 = transient K⁺ efflux · 2 = plateau (Ca²⁺ in ≈ K⁺ out) · 3 = repolarizing K⁺ efflux · 4 = resting potential.</span></figcaption>
-        </figure>
-
-        <ul class="tidy">
-          <li><b>Phase 0</b> — rapid upstroke; voltage-gated <b>Na⁺</b> channels open.</li>
-          <li><b>Phase 1</b> — brief dip; Na⁺ channels close, transient <b>K⁺</b> efflux.</li>
-          <li><b>Phase 2</b> — plateau; voltage-gated <b>Ca²⁺</b> influx balances K⁺ efflux.</li>
-          <li><b>Phase 3</b> — repolarization; Ca²⁺ channels close, <b>K⁺</b> efflux dominates.</li>
-          <li><b>Phase 4</b> — resting potential maintained by K⁺ leak.</li>
-        </ul>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--physio)"></i><i style="--seg:var(--patho)"></i></div>
+    </div>
+    <a class="lrow" data-lens="physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Heart Sounds</span>
+      <span class="lrow-state done">Done</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Heart Murmurs</span>
+      <span class="lrow-state prog">Active</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s5" style="--accent:var(--patho)">
+    <div class="lsec-head">
+      <span class="lsec-num">V</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Heart Failure</div>
+        <div class="lsec-sub">5 lessons &middot; 0 done</div>
       </div>
-
-      <div class="lens physio" data-lens="physio">
-        <span class="lens-label"><i class="pin"></i>Physiology</span>
-        <h4>Pacemaker cells are different</h4>
-        <p>SA and AV nodal cells lack fast Na⁺ channels. Their unstable phase 4 (the <span class="key">funny current, I<tspan>f</tspan></span>) slowly drifts toward threshold, then a <strong>Ca²⁺</strong>-driven upstroke fires. This automaticity is why the SA node sets the pace at <span class="lab">60–100 bpm</span>.</p>
-        <div class="call mnemonic">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3a4 4 0 0 0-4 4 3.5 3.5 0 0 0-1 5 3.5 3.5 0 0 0 2 5 3 3 0 0 0 5 1V4a3 3 0 0 0-2-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 3a4 4 0 0 1 4 4 3.5 3.5 0 0 1 1 5 3.5 3.5 0 0 1-2 5 3 3 0 0 1-5 1" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-          <div class="call-t">Mnemonic</div>
-          <p><strong>"Pacemakers Pick Calcium."</strong> Nodal upstroke = Ca²⁺ (slow), ventricular upstroke = Na⁺ (fast).</p>
-        </div>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i></div>
+    </div>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Heart Failure Basics</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Systolic &amp; Diastolic Heart Failure</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Restrictive Cardiomyopathy</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho pharm" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--pharm)"></i></span>
+      <span class="lrow-title">Acute Heart Failure</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho pharm" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--pharm)"></i></span>
+      <span class="lrow-title">Chronic Heart Failure</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s6" style="--accent:var(--embryo)">
+    <div class="lsec-head">
+      <span class="lsec-num">VI</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Congenital Heart Disease</div>
+        <div class="lsec-sub">4 lessons &middot; 0 done</div>
       </div>
-
-      <div class="lens pharm" data-lens="pharm">
-        <span class="lens-label"><i class="pin"></i>Pharmacology</span>
-        <h4>Where antiarrhythmics act</h4>
-        <p>The Vaughan-Williams classes map directly onto these phases — knowing the curve tells you the drug.</p>
-        <ul class="tidy">
-          <li><b>Class I</b> (Na⁺ blockers) — slow <span class="key">phase 0</span> upstroke.</li>
-          <li><b>Class II</b> (β-blockers) — slow nodal <span class="key">phase 4</span>, reducing rate.</li>
-          <li><b>Class III</b> (K⁺ blockers, e.g. amiodarone) — prolong <span class="key">phase 3</span> &amp; the QT interval.</li>
-          <li><b>Class IV</b> (Ca²⁺ blockers) — slow AV node conduction.</li>
-        </ul>
-        <div class="call hy">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-          <div class="call-t">High-yield</div>
-          <p>Class III drugs <strong>prolong the QT</strong> → risk of <strong>torsades de pointes</strong>. This link between phase 3, QT, and torsades is tested constantly.</p>
-        </div>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--embryo)"></i><i style="--seg:var(--embryo)"></i><i style="--seg:var(--embryo)"></i><i style="--seg:var(--embryo)"></i></div>
+    </div>
+    <a class="lrow" data-lens="embryo" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--embryo)"></i></span>
+      <span class="lrow-title">Cardiac Embryology</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="embryo patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--embryo)"></i><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Shunts</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="embryo patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--embryo)"></i><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Cyanotic Congenital Heart Disease</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="embryo anatomy" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--embryo)"></i><i style="background:var(--anatomy)"></i></span>
+      <span class="lrow-title">Coarctation of the Aorta</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s7" style="--accent:var(--patho)">
+    <div class="lsec-head">
+      <span class="lsec-num">VII</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Hypertension</div>
+        <div class="lsec-sub">3 lessons &middot; 0 done</div>
       </div>
-    </article>
-
-    <!-- ===================== TOPIC 3: CARDIAC OUTPUT ===================== -->
-    <article class="topic reveal" id="co">
-      <header class="topic-head">
-        <span class="topic-kicker">Topic 3</span>
-        <h2>Cardiac output &amp; the Frank–Starling relationship</h2>
-        <div class="lensmap">
-          <span style="--c:var(--physio)">Physiology</span>
-        </div>
-      </header>
-
-      <div class="lens physio" data-lens="physio">
-        <span class="lens-label"><i class="pin"></i>Physiology</span>
-        <h4>The equation that runs the circulation</h4>
-        <p><span class="key">Cardiac output = heart rate × stroke volume</span>. Stroke volume itself depends on three levers: <strong>preload</strong>, <strong>afterload</strong>, and <strong>contractility</strong>.</p>
-        <div class="buzz">
-          <b>CO = HR × SV</b>
-          <b>SV = EDV − ESV</b>
-          <b>EF = SV / EDV</b>
-          <b>MAP = CO × TPR</b>
-        </div>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--pharm)"></i></div>
+    </div>
+    <a class="lrow" data-lens="patho physio" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--physio)"></i></span>
+      <span class="lrow-title">Hypertension</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Secondary Hypertension</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="pharm" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--pharm)"></i></span>
+      <span class="lrow-title">Hypertension Drugs</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  <section class="lsec reveal" id="s8" style="--accent:var(--patho)">
+    <div class="lsec-head">
+      <span class="lsec-num">VIII</span>
+      <div class="lsec-titles">
+        <div class="lsec-title">Other Cardiac Disease</div>
+        <div class="lsec-sub">7 lessons &middot; 0 done</div>
       </div>
+      <div class="lensbar" aria-hidden="true"><i style="--seg:var(--patho)"></i><i style="--seg:var(--physio)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i><i style="--seg:var(--patho)"></i></div>
+    </div>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Valve Disease</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="physio patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--physio)"></i><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Shock</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Pericardial Disease</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho anatomy" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--anatomy)"></i></span>
+      <span class="lrow-title">Aortic Dissection</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Cardiac Tumors</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i></span>
+      <span class="lrow-title">Hypertrophic Cardiomyopathy</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+    <a class="lrow" data-lens="patho micro" href="#" data-stub>
+      <span class="lrow-ticks" aria-hidden="true"><i style="background:var(--patho)"></i><i style="background:var(--micro)"></i></span>
+      <span class="lrow-title">Endocarditis</span>
+      <span class="lrow-state new">New</span>
+      <svg class="lrow-arrow" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </a>
+  </section>
+  </main>
 
-      <div class="lens physio" data-lens="physio">
-        <span class="lens-label"><i class="pin"></i>Physiology</span>
-        <h4>Frank–Starling: stretch makes strength</h4>
-        <p>Within limits, the more the ventricle fills (<strong>preload</strong>), the harder it contracts — stretched sarcomeres develop more force. Changing <strong>contractility</strong> shifts the entire curve up or down.</p>
-
-        <figure class="figure">
-          <div class="canvas">
-            <svg viewBox="0 0 620 330" role="img" aria-label="Frank-Starling curves plotting stroke volume against preload for increased contractility, normal, and heart failure">
-              <line x1="70" y1="32" x2="70" y2="280" stroke="var(--line)" stroke-width="1.5"/>
-              <line x1="70" y1="280" x2="588" y2="280" stroke="var(--line)" stroke-width="1.5"/>
-              <text x="30" y="158" class="daxis" transform="rotate(-90 30 158)">Stroke volume / CO</text>
-              <text x="330" y="312" text-anchor="middle" class="daxis">Preload (LV end-diastolic volume) →</text>
-
-              <!-- increased contractility -->
-              <path d="M76,250 C150,205 215,120 300,86 C380,56 470,48 582,46" fill="none" stroke="var(--physio)" stroke-width="3" stroke-linecap="round"/>
-              <!-- normal -->
-              <path d="M76,262 C170,238 250,158 340,120 C420,90 500,82 582,80" fill="none" stroke="var(--ink-soft)" stroke-width="3" stroke-linecap="round"/>
-              <!-- failure -->
-              <path d="M76,272 C200,262 320,222 430,202 C500,190 540,188 582,186" fill="none" stroke="var(--patho)" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 6"/>
-
-              <text x="470" y="38" class="dlabel-b" fill="var(--physio)">↑ contractility</text>
-              <text x="498" y="74" class="dlabel-b">normal</text>
-              <text x="470" y="206" class="dlabel-b" fill="var(--patho)">heart failure</text>
-            </svg>
-          </div>
-          <figcaption><b>Fig 3</b><span>Sympathetic drive, digoxin and ↑Ca²⁺ raise the curve. Heart failure, β-blockade and ischemia lower it.</span></figcaption>
-        </figure>
-
-        <ul class="tidy">
-          <li><b>↑ Contractility</b> — catecholamines, digoxin. Curve shifts <span class="key">up</span>.</li>
-          <li><b>↓ Contractility</b> — heart failure, β-blockers, ischemia, acidosis. Curve shifts <span class="key">down</span>.</li>
-          <li><b>↑ Preload</b> — exercise, fluids, pregnancy. Move <span class="key">right</span> along the curve.</li>
-        </ul>
-
-        <div class="call clinical">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M6 3v6a6 6 0 0 0 12 0V3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="16" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 15v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-          <div class="call-t">Clinical correlation</div>
-          <p>A failing heart sits on a low, flat curve — it can't recruit more stroke volume from extra filling, so giving too much fluid just raises pressures and causes <strong>pulmonary edema</strong>.</p>
-        </div>
-      </div>
-    </article>
-
-    <!-- ===================== TOPIC 4: HEART FAILURE ===================== -->
-    <article class="topic reveal" id="hf">
-      <header class="topic-head">
-        <span class="topic-kicker">Topic 4</span>
-        <h2>Heart failure</h2>
-        <div class="lensmap">
-          <span style="--c:var(--patho)">Pathology</span>
-          <span style="--c:var(--physio)">Physiology</span>
-          <span style="--c:var(--pharm)">Pharmacology</span>
-        </div>
-      </header>
-
-      <div class="glance">
-        <div class="glance-h">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>
-          At a glance
-        </div>
-        <ul>
-          <li><strong>Left HF</strong> backs up into the lungs → dyspnea, orthopnea, crackles.</li>
-          <li><strong>Right HF</strong> backs up into the body → JVD, peripheral edema, hepatomegaly. Its #1 cause is <strong>left HF</strong>.</li>
-          <li>Drugs that improve <em>mortality</em>: <span class="hy-term">ACE inhibitors / ARBs, β-blockers, aldosterone antagonists, SGLT2 inhibitors</span>.</li>
-        </ul>
-      </div>
-
-      <div class="lens patho" data-lens="patho">
-        <span class="lens-label"><i class="pin"></i>Pathology</span>
-        <h4>Systolic vs diastolic — a pump problem vs a filling problem</h4>
-        <div class="compare-scroll">
-          <table class="compare">
-            <thead><tr><th></th><th>Systolic (HFrEF)</th><th>Diastolic (HFpEF)</th></tr></thead>
-            <tbody>
-              <tr><th>Core defect</th><td>Weak contraction</td><td>Stiff, non-compliant ventricle</td></tr>
-              <tr><th>Ejection fraction</th><td>Reduced (<span class="lab">&lt;40%</span>)</td><td>Preserved (<span class="lab">≥50%</span>)</td></tr>
-              <tr><th>Ventricle</th><td>Dilated, thin</td><td>Hypertrophied, small cavity</td></tr>
-              <tr><th>Typical cause</th><td>Prior MI, dilated cardiomyopathy</td><td>Chronic hypertension, aging</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div class="lens physio" data-lens="physio">
-        <span class="lens-label"><i class="pin"></i>Physiology</span>
-        <h4>Why the body makes it worse</h4>
-        <p>Falling output triggers <strong>RAAS</strong> and sympathetic activation — a sensible short-term fix that, sustained, raises afterload and preload until the failing ventricle is overwhelmed. This <span class="key">maladaptive remodeling</span> is the target of nearly every effective HF drug.</p>
-        <div class="buzz">
-          <b>↑ BNP</b>
-          <b>↑ RAAS</b>
-          <b>↑ Sympathetic tone</b>
-          <b>Ventricular remodeling</b>
-        </div>
-      </div>
-
-      <div class="lens pharm" data-lens="pharm">
-        <span class="lens-label"><i class="pin"></i>Pharmacology</span>
-        <h4>Treat the physiology, not just the symptoms</h4>
-        <ul class="tidy">
-          <li><b>ACE-i / ARB</b> — block RAAS; reduce afterload &amp; remodeling. <span class="key">Improve survival.</span></li>
-          <li><b>β-blockers</b> — blunt sympathetic overdrive. <span class="key">Improve survival</span> (start low, go slow).</li>
-          <li><b>Aldosterone antagonists</b> — spironolactone; anti-remodeling. <span class="key">Improve survival.</span></li>
-          <li><b>Loop diuretics</b> — relieve congestion &amp; edema (symptoms, not mortality).</li>
-        </ul>
-        <div class="call pitfall">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 17v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-          <div class="call-t">Don't confuse</div>
-          <p>Diuretics make patients <em>feel</em> dramatically better but don't extend life. Step 1 loves the distinction between <strong>symptom relief</strong> and <strong>mortality benefit</strong>.</p>
-        </div>
-      </div>
-    </article>
-
-    <!-- ===================== TOPIC 5: CONGENITAL ===================== -->
-    <article class="topic reveal" id="chd">
-      <header class="topic-head">
-        <span class="topic-kicker">Topic 5</span>
-        <h2>Congenital heart disease</h2>
-        <div class="lensmap">
-          <span style="--c:var(--embryo)">Embryology</span>
-          <span style="--c:var(--anatomy)">Anatomy</span>
-          <span style="--c:var(--patho)">Pathology</span>
-        </div>
-      </header>
-
-      <div class="lens embryo" data-lens="embryo">
-        <span class="lens-label"><i class="pin"></i>Embryology</span>
-        <h4>How the defect is built</h4>
-        <p>The heart begins as a single tube that loops and septates around weeks 3–8. Failure to fully partition the chambers or great vessels produces a <span class="key">shunt</span> — the central concept of congenital heart disease.</p>
-        <div class="call mnemonic">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3a4 4 0 0 0-4 4 3.5 3.5 0 0 0-1 5 3.5 3.5 0 0 0 2 5 3 3 0 0 0 5 1V4a3 3 0 0 0-2-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 3a4 4 0 0 1 4 4 3.5 3.5 0 0 1 1 5 3.5 3.5 0 0 1-2 5 3 3 0 0 1-5 1" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-          <div class="call-t">Mnemonic</div>
-          <p><strong>"The 5 T's"</strong> of cyanosis: <strong>T</strong>runcus arteriosus, <strong>T</strong>ransposition, <strong>T</strong>ricuspid atresia, <strong>T</strong>etralogy of Fallot, <strong>T</strong>otal anomalous pulmonary venous return.</p>
-        </div>
-      </div>
-
-      <div class="lens patho" data-lens="patho">
-        <span class="lens-label"><i class="pin"></i>Pathology</span>
-        <h4>Left-to-right vs right-to-left shunts</h4>
-        <ul class="tidy">
-          <li><b>Left → right</b> (acyanotic): <span class="key">VSD, ASD, PDA</span>. Higher left-sided pressure pushes oxygenated blood back to the lungs. <em>Late</em> cyanosis if untreated.</li>
-          <li><b>Right → left</b> (cyanotic): the 5 T's. Deoxygenated blood bypasses the lungs → <em>early</em> cyanosis.</li>
-        </ul>
-        <div class="call pitfall">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 2 20h20L12 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 17v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
-          <div class="call-t">Don't confuse</div>
-          <p>An untreated left-to-right shunt can reverse once pulmonary pressures climb — <strong>Eisenmenger syndrome</strong> — turning a "pink" baby blue years later.</p>
-        </div>
-      </div>
-
-      <div class="lens anatomy" data-lens="anatomy">
-        <span class="lens-label"><i class="pin"></i>Anatomy</span>
-        <h4>Tetralogy of Fallot — the four pieces</h4>
-        <ul class="tidy">
-          <li><b>P</b>ulmonary stenosis (the driver of severity)</li>
-          <li><b>R</b>ight ventricular hypertrophy</li>
-          <li><b>O</b>verriding aorta</li>
-          <li><b>V</b>SD</li>
-        </ul>
-        <div class="call hy">
-          <span class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
-          <div class="call-t">High-yield</div>
-          <p>Mnemonic <strong>"PROVe"</strong>. The classic <strong>boot-shaped heart</strong> on X-ray, and the child who squats during "tet spells" to raise systemic resistance and reduce the right-to-left shunt.</p>
-        </div>
-      </div>
-    </article>
-
-  </div><!-- /content -->
-</div><!-- /chapbody -->
-</div><!-- /wrap -->
+</div>
+</div>
 
 <footer class="foot">
   <div class="wrap foot-in">
     <div>
       <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>Med<b>Lens</b></a>
-      <p class="disclaim">Sample content for demonstration of the discipline-lens format — not medical advice. Verify all facts against a primary review source.</p>
+      <p class="disclaim">Lesson order follows Boards &amp; Beyond. Sample content for demonstration &mdash; not medical advice.</p>
     </div>
-    <a class="btn btn-ghost" href="respiratory.html">Next: Respiratory →</a>
+    <a class="btn btn-ghost" href="respiratory.html">Next: Respiratory &rarr;</a>
   </div>
 </footer>
 

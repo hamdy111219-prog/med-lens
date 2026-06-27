@@ -24,19 +24,35 @@
 
   /* ---------- Discipline filter chips ---------- */
   var chips = document.querySelectorAll(".chip[data-filter]");
-  var lenses = document.querySelectorAll(".lens[data-lens]");
+  // content blocks on lesson pages + lesson rows on the syllabus hub
+  var lenses = document.querySelectorAll("[data-lens]");
+  function lensList(el) { return (el.getAttribute("data-lens") || "").trim().split(/\s+/); }
   if (chips.length) {
     chips.forEach(function (chip) {
       chip.addEventListener("click", function () {
         var f = chip.getAttribute("data-filter");
         chips.forEach(function (c) { c.setAttribute("aria-pressed", c === chip ? "true" : "false"); });
         lenses.forEach(function (l) {
-          var match = f === "all" || l.getAttribute("data-lens") === f;
+          var match = f === "all" || lensList(l).indexOf(f) !== -1;
           l.classList.toggle("dim", !match);
+        });
+        // on the syllabus hub, fade whole sections that have no matching lesson
+        document.querySelectorAll(".lsec").forEach(function (sec) {
+          if (f === "all") { sec.classList.remove("dim-sec"); return; }
+          var any = Array.prototype.some.call(
+            sec.querySelectorAll(".lrow[data-lens]"),
+            function (r) { return lensList(r).indexOf(f) !== -1; }
+          );
+          sec.classList.toggle("dim-sec", !any);
         });
       });
     });
   }
+
+  /* ---------- Stub links (lessons not yet built) ---------- */
+  document.querySelectorAll("a[data-stub]").forEach(function (a) {
+    a.addEventListener("click", function (e) { e.preventDefault(); });
+  });
 
   /* ---------- Mobile TOC toggle ---------- */
   var tocToggle = document.querySelector(".toc-mobile-toggle");
