@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — MedLens Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+  .auth-card { width: min(400px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); padding: 30px 28px 26px; }
+  .auth-card .brand { display: flex; align-items: center; gap: 9px; font-family: var(--f-display); font-weight: 700; font-size: 1.2rem; color: var(--ink); text-decoration: none; }
+  .auth-card .brand b { color: var(--brand); }
+  .auth-card .brand .brand-mark { width: 28px; height: 28px; color: var(--brand); }
+  .auth-card h1 { font-family: var(--f-display); font-weight: 600; font-size: 1.45rem; letter-spacing: -.02em; margin: 20px 0 4px; }
+  .auth-card .sub { color: var(--ink-soft); font-size: .9rem; margin: 0 0 22px; }
+  .auth-card form { display: flex; flex-direction: column; gap: 14px; }
+  .auth-err { font-size: .85rem; color: var(--patho); background: color-mix(in srgb, var(--patho) 10%, transparent); border: 1px solid color-mix(in srgb, var(--patho) 30%, var(--line)); border-radius: 9px; padding: 9px 12px; display: none; }
+  .auth-err.show { display: block; }
+  .auth-foot { margin-top: 18px; font-size: .8rem; color: var(--ink-faint); text-align: center; }
+  .auth-foot a { color: var(--brand); text-decoration: none; }
+</style>
+</head>
+<body class="admin">
+<div class="auth-wrap">
+  <div class="auth-card">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+      Med<b>Lens</b>
+    </a>
+    <h1>Admin sign in</h1>
+    <p class="sub" id="subline">Manage chapters, sections and lessons.</p>
+
+    <div class="banner demo" id="demoBanner" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8h.01M11 12h1v4h1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><b>Demo mode.</b> No Supabase credentials in <code>config.js</code> yet — just press the button to explore the dashboard with sample data.</div>
+    </div>
+
+    <form id="form">
+      <div class="auth-err" id="err"></div>
+      <div class="field" id="emailField">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" placeholder="you@example.com">
+      </div>
+      <div class="field" id="pwField">
+        <label for="pw">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary" id="submit" type="submit">Sign in</button>
+    </form>
+
+    <p class="auth-foot">Need the schema? See <a href="index.html">the site</a> · <a href="#" id="themeToggle" data-theme-toggle>toggle theme</a></p>
+  </div>
+</div>
+
+<script type="module">
+  import { auth, MODE } from "./db.js";
+
+  const $ = s => document.querySelector(s);
+  const err = $("#err");
+  const showErr = m => { err.textContent = m; err.classList.add("show"); };
+
+  // If already signed in, go straight to the dashboard.
+  (async () => {
+    const u = await auth.getUser();
+    if (u) location.href = "dashboard.html";
+  })();
+
+  if (MODE === "demo") {
+    $("#demoBanner").style.display = "flex";
+    $("#subline").textContent = "Exploring with in-browser sample data.";
+    $("#submit").textContent = "Enter demo workspace";
+    $("#emailField").style.display = "none";
+    $("#pwField").style.display = "none";
+  }
+
+  $("#form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    err.classList.remove("show");
+    const btn = $("#submit"); btn.disabled = true; const label = btn.textContent; btn.textContent = "…";
+    try {
+      await auth.signIn($("#email").value.trim(), $("#pw").value);
+      location.href = "dashboard.html";
+    } catch (ex) {
+      showErr(ex?.message || "Could not sign in. Check your email and password.");
+      btn.disabled = false; btn.textContent = label;
+    }
+  });
+</script>
+<script src="app.js"></script>
+</body>
+</html>

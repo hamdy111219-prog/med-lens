@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard — MedLens Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin">
+
+<header class="admin-top">
+  <a class="brand" href="index.html">
+    <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+    Med<b>Lens</b>
+  </a>
+  <span class="tag">Admin</span>
+  <span class="mode-badge" id="modeBadge">—</span>
+  <span class="sp"></span>
+  <span class="who" id="who"></span>
+  <button class="iconbtn" data-theme-toggle aria-label="Toggle dark mode" title="Toggle theme">
+    <svg class="moon" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <svg class="sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.6M12 18.9v2.6M21.5 12h-2.6M5.1 12H2.5M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8M18.7 18.7l-1.8-1.8M7.1 7.1 5.3 5.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+  <button class="btn btn-ghost sm" id="signout">Sign out</button>
+</header>
+
+<div class="admin-shell">
+  <aside class="side">
+    <div class="side-h">Content</div>
+    <button class="side-item active" id="navChapters">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16M4 12h16M4 19h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Chapters
+    </button>
+    <a class="side-item" href="index.html" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M14 5h5v5M19 5l-8 8M19 14v5H5V5h5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      View site
+    </a>
+    <div class="side-h" style="margin-top:14px">Help</div>
+    <a class="side-item" href="SETUP.md" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.2 2.4c-.7.3-1.2.9-1.2 1.6M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Setup guide
+    </a>
+    <div class="side-foot" id="sideFoot"></div>
+  </aside>
+
+  <main class="main" id="view"><div class="spin"></div></main>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import * as DB from "./db.js";
+const { MODE, auth, DISCIPLINES, STATES, CATEGORIES } = DB;
+
+/* ---------- tiny DOM helper ---------- */
+function h(tag, props = {}, ...kids) {
+  const e = document.createElement(tag);
+  for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "html") e.innerHTML = v;
+    else if (k === "style" && typeof v === "object") Object.assign(e.style, v);
+    else if (k.startsWith("on") && typeof v === "function") e.addEventListener(k.slice(2).toLowerCase(), v);
+    else e.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid == null || kid === false) continue;
+    e.append(kid.nodeType ? kid : document.createTextNode(kid));
+  }
+  return e;
+}
+const $ = s => document.querySelector(s);
+const lensLabel = k => (DISCIPLINES.find(d => d.key === k) || {}).label || k;
+const stateLabel = k => (STATES.find(s => s.key === k) || {}).label || k;
+const catLabel = k => (CATEGORIES.find(c => c.key === k) || {}).label || k;
+
+const ICON = {
+  edit: '<svg viewBox="0 0 24 24" fill="none"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  trash: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M10 7V5h4v2M6 7l1 12h10l1-12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  chevron: '<svg viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 4h11a2 2 0 0 1 2 2v14H7a2 2 0 0 1-2-2V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  spark: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.8 5L19 9.8 13.8 12 12 17l-1.8-5L5 9.8 10.2 8 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+};
+
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1900);
+}
+function slugify(s) {
+  return (s || "").toLowerCase().replace(/&[a-z]+;/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/* ---------- modal + form ---------- */
+function closeModal() { $("#modalRoot").innerHTML = ""; }
+function openModal(title, bodyNodes, footNodes) {
+  const overlay = h("div", { class: "modal-overlay", onclick: e => { if (e.target === overlay) closeModal(); } },
+    h("div", { class: "modal", role: "dialog", "aria-modal": "true" },
+      h("div", { class: "modal-head" }, h("h3", {}, title),
+        h("button", { class: "ibtn", onclick: closeModal, "aria-label": "Close" }, h("span", { html: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' }))),
+      h("div", { class: "modal-body" }, ...bodyNodes),
+      h("div", { class: "modal-foot" }, ...footNodes)));
+  $("#modalRoot").innerHTML = ""; $("#modalRoot").append(overlay);
+  const first = overlay.querySelector("input,select,textarea"); if (first) first.focus();
+}
+
+// fieldDefs: {name,label,type:'text'|'textarea'|'select'|'lenses',options,hint,full}
+function formModal({ title, fields, values = {}, submitLabel = "Save", onSave }) {
+  const refs = {};
+  const nodes = fields.map(f => {
+    let input;
+    if (f.type === "textarea") input = h("textarea", { id: "f_" + f.name }, values[f.name] || "");
+    else if (f.type === "select") {
+      input = h("select", { id: "f_" + f.name }, ...f.options.map(o =>
+        h("option", { value: o.value, ...(String(values[f.name]) === String(o.value) ? { selected: "" } : {}) }, o.label)));
+    } else if (f.type === "lenses") {
+      const chosen = new Set(values[f.name] || []);
+      input = h("div", { class: "lenspick" }, ...DISCIPLINES.map(d => {
+        const b = h("button", { type: "button", "aria-pressed": chosen.has(d.key) ? "true" : "false", style: `--c:var(--${d.key})` },
+          h("i"), d.label);
+        b.addEventListener("click", () => {
+          const on = b.getAttribute("aria-pressed") === "true";
+          b.setAttribute("aria-pressed", on ? "false" : "true");
+          on ? chosen.delete(d.key) : chosen.add(d.key);
+        });
+        return b;
+      }));
+      refs[f.name] = () => [...chosen];
+    } else input = h("input", { id: "f_" + f.name, type: f.type || "text", value: values[f.name] || "", placeholder: f.placeholder || "" });
+    if (!refs[f.name]) refs[f.name] = () => input.value;
+    return h("div", { class: "field" + (f.full ? "" : ""), }, h("label", { for: "f_" + f.name }, f.label), input, f.hint ? h("div", { class: "hint" }, f.hint) : null);
+  });
+  if (title.startsWith("Edit lesson") || title.startsWith("New lesson")) {
+    nodes.push(h("div", { class: "future" },
+      h("span", { html: ICON.spark }),
+      h("div", {}, h("b", {}, "Lesson content"), " is generated by the Claude API — wired up in a later step. For now this saves the lesson’s title, lenses and status.")));
+  }
+  const save = h("button", { class: "btn btn-primary" }, submitLabel);
+  save.addEventListener("click", async () => {
+    const out = {}; for (const f of fields) out[f.name] = refs[f.name]();
+    save.disabled = true; save.textContent = "Saving…";
+    try { await onSave(out); closeModal(); }
+    catch (ex) { save.disabled = false; save.textContent = submitLabel; toast(ex?.message || "Save failed"); }
+  });
+  openModal(title, nodes, [h("button", { class: "btn btn-ghost", onclick: closeModal }, "Cancel"), save]);
+}
+
+function confirmModal(title, message, onYes, danger = true) {
+  const yes = h("button", { class: "btn " + (danger ? "btn-danger" : "btn-primary") }, "Delete");
+  yes.addEventListener("click", async () => { yes.disabled = true; yes.textContent = "Deleting…"; try { await onYes(); closeModal(); } catch (ex) { yes.disabled = false; yes.textContent = "Delete"; toast(ex?.message || "Failed"); } });
+  openModal(title, [h("p", { style: { color: "var(--ink-soft)", lineHeight: "1.55", margin: "2px 0" } }, message)],
+    [h("button", { class: "btn btn-ghost", onclick: closeModal }, "Cancel"), yes]);
+}
+
+/* ---------- app state + navigation ---------- */
+const state = { view: "chapters", chapterId: null, sectionId: null, chapter: null, section: null };
+const view = $("#view");
+const setBusy = () => { view.innerHTML = '<div class="spin"></div>'; };
+
+function pageHead(titleText, lede, actionNode) {
+  return h("div", { class: "page-head" },
+    h("div", {}, h("h1", {}, titleText), lede ? h("p", { class: "lede" }, lede) : null),
+    actionNode || null);
+}
+function crumbs(parts) {
+  const c = h("div", { class: "crumbs" });
+  parts.forEach((p, i) => {
+    if (i) c.append(h("span", { class: "sep" }, "/"));
+    c.append(p.onclick ? h("a", { onclick: p.onclick }, p.label) : h("span", {}, p.label));
+  });
+  return c;
+}
+function demoBanner() {
+  if (MODE !== "demo") return null;
+  return h("div", { class: "banner demo" },
+    h("span", { html: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 8h.01M11 12h1v4h1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' }),
+    h("div", {}, h("b", {}, "Demo mode — changes stay in this browser only. "),
+      "Add your Supabase URL + key to ", h("code", {}, "config.js"), " to make this a real backend. ",
+      h("a", { href: "SETUP.md", target: "_blank" }, "Setup guide →")));
+}
+
+async function go(v, opts = {}) { Object.assign(state, opts, { view: v }); render(); }
+
+/* ---------- views ---------- */
+async function render() {
+  setBusy();
+  try {
+    if (state.view === "chapters") return await viewChapters();
+    if (state.view === "chapter") return await viewChapter();
+    if (state.view === "section") return await viewSection();
+  } catch (ex) {
+    view.innerHTML = "";
+    view.append(h("div", { class: "empty" }, h("p", {}, "Couldn’t load data: " + (ex?.message || ex))));
+  }
+}
+
+async function viewChapters() {
+  const [chapters, ct] = await Promise.all([DB.listChapters(), DB.counts()]);
+  view.innerHTML = "";
+  view.append(
+    pageHead("Chapters", "Everything students see is built from these. Drafts stay hidden from the public site until published.",
+      h("button", { class: "btn btn-primary", onclick: () => editChapter() }, h("span", { html: ICON.plus, style: { display: "inline-flex", width: "16px" } }), "New chapter")),
+    demoBanner());
+  if (!chapters.length) {
+    view.append(h("div", { class: "panel" }, h("div", { class: "empty" }, h("span", { html: ICON.book }), h("p", {}, "No chapters yet."), h("button", { class: "btn btn-primary", onclick: () => editChapter() }, "Create the first chapter"))));
+    return;
+  }
+  const panel = h("div", { class: "panel" });
+  chapters.forEach(c => {
+    const stat = ct.perChapter[c.id] || { sections: 0, lessons: 0 };
+    panel.append(h("div", { class: "drow", style: `--accent:var(--${c.category === "foundations" ? "biochem" : "patho"})` },
+      h("span", { class: "num" }, String(c.order_index).padStart(2, "0")),
+      h("div", { class: "grow" },
+        h("div", { class: "t", onclick: () => go("chapter", { chapterId: c.id }) }, c.title),
+        h("div", { class: "m" },
+          h("span", {}, catLabel(c.category)),
+          h("span", {}, "·"), h("span", {}, stat.sections + " sections"),
+          h("span", {}, "·"), h("span", {}, stat.lessons + " lessons"),
+          c.slug ? h("span", { style: { fontFamily: "var(--f-mono)", fontSize: ".72rem" } }, "/" + c.slug) : null)),
+      h("span", { class: "pill " + c.status }, c.status),
+      h("div", { class: "actions" },
+        h("a", { class: "manage", onclick: () => go("chapter", { chapterId: c.id }) }, "Manage", h("span", { html: ICON.chevron })),
+        h("button", { class: "ibtn", title: "Edit", onclick: () => editChapter(c), html: ICON.edit }),
+        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeChapter(c), html: ICON.trash }))));
+  });
+  view.append(panel);
+}
+
+async function viewChapter() {
+  const chapters = await DB.listChapters();
+  const c = chapters.find(x => x.id === state.chapterId);
+  if (!c) return go("chapters");
+  state.chapter = c;
+  const sections = await DB.listSections(c.id);
+  view.innerHTML = "";
+  view.append(crumbs([{ label: "Chapters", onclick: () => go("chapters") }, { label: c.title }]));
+  view.append(pageHead(c.title, c.subtitle,
+    h("div", { style: { display: "flex", gap: "8px" } },
+      h("a", { class: "btn btn-ghost", href: "chapter.html?slug=" + encodeURIComponent(c.slug), target: "_blank", rel: "noopener" }, "View ↗"),
+      h("button", { class: "btn btn-ghost", onclick: () => editChapter(c) }, "Edit chapter"),
+      h("button", { class: "btn btn-primary", onclick: () => editSection(null) }, h("span", { html: ICON.plus, style: { display: "inline-flex", width: "16px" } }), "New section"))));
+  view.append(h("div", { style: { display: "flex", gap: "10px", margin: "-6px 0 18px", alignItems: "center" } },
+    h("span", { class: "pill " + c.status }, c.status),
+    h("span", { style: { fontSize: ".84rem", color: "var(--ink-soft)" } }, catLabel(c.category)),
+    h("button", { class: "btn btn-ghost sm", onclick: () => togglePublish(c) }, c.status === "published" ? "Unpublish" : "Publish")));
+
+  if (!sections.length) {
+    view.append(h("div", { class: "panel" }, h("div", { class: "empty" }, h("span", { html: ICON.book }), h("p", {}, "No sections in this chapter yet."), h("button", { class: "btn btn-primary", onclick: () => editSection(null) }, "Add a section"))));
+    return;
+  }
+  const counts = await DB.counts();
+  const panel = h("div", { class: "panel" });
+  sections.forEach(s => {
+    const n = counts.perSection[s.id] || 0;
+    panel.append(h("div", { class: "drow", style: "--accent:var(--physio)" },
+      h("span", { class: "num" }, s.numeral || "–"),
+      h("div", { class: "grow" },
+        h("div", { class: "t", onclick: () => go("section", { sectionId: s.id }) }, s.title),
+        h("div", { class: "m" }, h("span", {}, n + " lesson" + (n === 1 ? "" : "s")))),
+      h("div", { class: "actions" },
+        h("a", { class: "manage", onclick: () => go("section", { sectionId: s.id }) }, "Lessons", h("span", { html: ICON.chevron })),
+        h("button", { class: "ibtn", title: "Edit", onclick: () => editSection(s), html: ICON.edit }),
+        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeSection(s), html: ICON.trash }))));
+  });
+  view.append(panel);
+}
+
+async function viewSection() {
+  const c = state.chapter || (await DB.listChapters()).find(x => x.id === state.chapterId);
+  const sections = await DB.listSections(state.chapterId || (c && c.id));
+  const s = sections.find(x => x.id === state.sectionId) || (await findSection(state.sectionId));
+  if (!s) return go("chapters");
+  state.section = s; state.chapterId = s.chapter_id;
+  const chapter = c || (await DB.listChapters()).find(x => x.id === s.chapter_id);
+  const lessons = await DB.listLessons(s.id);
+  view.innerHTML = "";
+  view.append(crumbs([
+    { label: "Chapters", onclick: () => go("chapters") },
+    { label: chapter ? chapter.title : "Chapter", onclick: () => go("chapter", { chapterId: s.chapter_id }) },
+    { label: (s.numeral ? s.numeral + " · " : "") + s.title }]));
+  view.append(pageHead(s.title, "Lessons in this section. Order, lenses and status here drive the public syllabus.",
+    h("button", { class: "btn btn-primary", onclick: () => editLesson(null) }, h("span", { html: ICON.plus, style: { display: "inline-flex", width: "16px" } }), "New lesson")));
+  if (!lessons.length) {
+    view.append(h("div", { class: "panel" }, h("div", { class: "empty" }, h("span", { html: ICON.book }), h("p", {}, "No lessons yet."), h("button", { class: "btn btn-primary", onclick: () => editLesson(null) }, "Add a lesson"))));
+    return;
+  }
+  const panel = h("div", { class: "panel" });
+  lessons.forEach(l => {
+    panel.append(h("div", { class: "drow" },
+      h("span", { class: "ticks" }, ...(l.lenses.length ? l.lenses : ["ink-faint"]).map(k =>
+        h("i", { style: `background:var(--${k})` }))),
+      h("div", { class: "grow" },
+        h("div", { class: "t", onclick: () => editLesson(l) }, l.title),
+        h("div", { class: "m" },
+          ...l.lenses.map(k => h("span", {}, lensLabel(k))),
+          l.slug ? h("span", { style: { fontFamily: "var(--f-mono)", fontSize: ".72rem" } }, "/" + l.slug) : null)),
+      h("span", { class: "pill " + l.state }, stateLabel(l.state)),
+      h("div", { class: "actions" },
+        h("button", { class: "ibtn", title: "Edit", onclick: () => editLesson(l), html: ICON.edit }),
+        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeLesson(l), html: ICON.trash }))));
+  });
+  view.append(panel);
+}
+async function findSection(id) {
+  const chapters = await DB.listChapters();
+  for (const c of chapters) { const ss = await DB.listSections(c.id); const f = ss.find(x => x.id === id); if (f) return f; }
+  return null;
+}
+
+/* ---------- mutations ---------- */
+function editChapter(c) {
+  formModal({
+    title: c ? "Edit chapter" : "New chapter",
+    fields: [
+      { name: "title", label: "Title", placeholder: "e.g. Cardiology" },
+      { name: "slug", label: "Slug", hint: "Used in the page URL. Leave blank to auto-generate.", placeholder: "cardiology" },
+      { name: "subtitle", label: "Subtitle", type: "textarea" },
+      { name: "category", label: "Category", type: "select", options: CATEGORIES.map(x => ({ value: x.key, label: x.label })) },
+      { name: "status", label: "Status", type: "select", options: [{ value: "draft", label: "Draft (hidden)" }, { value: "published", label: "Published (public)" }] },
+    ],
+    values: c || { category: "systems", status: "draft" },
+    onSave: async v => {
+      if (!v.slug) v.slug = slugify(v.title);
+      if (c) { await DB.updateChapter(c.id, v); toast("Chapter saved"); }
+      else { await DB.createChapter(v); toast("Chapter created"); }
+      render();
+    }
+  });
+}
+async function togglePublish(c) {
+  await DB.updateChapter(c.id, { status: c.status === "published" ? "draft" : "published" });
+  toast(c.status === "published" ? "Moved to draft" : "Published"); render();
+}
+function removeChapter(c) {
+  confirmModal("Delete chapter?", `“${c.title}” and all of its sections and lessons will be permanently removed.`, async () => { await DB.deleteChapter(c.id); toast("Chapter deleted"); go("chapters"); });
+}
+function editSection(s) {
+  formModal({
+    title: s ? "Edit section" : "New section",
+    fields: [
+      { name: "numeral", label: "Numeral", hint: "e.g. I, II, III — shown as the section badge.", placeholder: "I" },
+      { name: "title", label: "Title", placeholder: "e.g. Ischemic Heart Disease" },
+    ],
+    values: s || {},
+    onSave: async v => {
+      if (s) { await DB.updateSection(s.id, v); toast("Section saved"); }
+      else { await DB.createSection(state.chapterId, v); toast("Section added"); }
+      render();
+    }
+  });
+}
+function removeSection(s) {
+  confirmModal("Delete section?", `“${s.title}” and all of its lessons will be permanently removed.`, async () => { await DB.deleteSection(s.id); toast("Section deleted"); render(); });
+}
+function editLesson(l) {
+  formModal({
+    title: l ? "Edit lesson" : "New lesson",
+    fields: [
+      { name: "title", label: "Title", placeholder: "e.g. Action Potentials" },
+      { name: "slug", label: "Slug", hint: "Optional — for the future lesson page URL.", placeholder: "action-potentials" },
+      { name: "lenses", label: "Discipline lenses", type: "lenses" },
+      { name: "state", label: "Status", type: "select", options: STATES.map(x => ({ value: x.key, label: x.label })) },
+    ],
+    values: l || { state: "new", lenses: [] },
+    onSave: async v => {
+      if (!v.slug) v.slug = slugify(v.title);
+      if (l) { await DB.updateLesson(l.id, v); toast("Lesson saved"); }
+      else { await DB.createLesson(state.sectionId, v); toast("Lesson added"); }
+      render();
+    }
+  });
+}
+function removeLesson(l) {
+  confirmModal("Delete lesson?", `“${l.title}” will be permanently removed.`, async () => { await DB.deleteLesson(l.id); toast("Lesson deleted"); render(); });
+}
+
+/* ---------- boot ---------- */
+$("#navChapters").addEventListener("click", () => go("chapters"));
+$("#signout").addEventListener("click", async () => { await auth.signOut(); location.href = "login.html"; });
+
+(async function boot() {
+  $("#modeBadge").textContent = MODE === "live" ? "Live · Supabase" : "Demo";
+  $("#modeBadge").className = "mode-badge " + MODE;
+  let user = await auth.getUser();
+  if (!user && MODE === "demo") { user = await auth.signIn("demo@medlens.app"); }  // frictionless preview
+  if (!user) { location.href = "login.html"; return; }
+  $("#who").textContent = user.email || "";
+  $("#sideFoot").textContent = MODE === "live" ? "Connected to Supabase." : "Demo data · resets are local.";
+
+  if (MODE === "live") {
+    const admin = await auth.isAdmin();
+    if (!admin) {
+      view.innerHTML = "";
+      view.append(h("div", { class: "banner demo", style: { marginTop: "20px" } },
+        h("span", { html: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' }),
+        h("div", {}, h("b", {}, "You’re signed in but not an admin. "),
+          "Writes are blocked by Row-Level Security. Promote your account in Supabase: ",
+          h("code", {}, "update profiles set role='admin' where email='" + (user.email || "you@example.com") + "';"))));
+      return;
+    }
+  }
+  render();
+})();
+</script>
+<script src="app.js"></script>
+</body>
+</html>
