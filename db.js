@@ -45,6 +45,11 @@ export const CATEGORIES = [
 
 const byOrder = (a, b) => (a.order_index - b.order_index) || (a.title || "").localeCompare(b.title || "");
 const uid = () => (crypto.randomUUID ? crypto.randomUUID() : "id-" + Math.random().toString(36).slice(2));
+const LENS_KEYS = DISCIPLINES.map(d => d.key);
+export function slugify(s) {
+  return (s || "").toLowerCase().replace(/&[a-z]+;/g, "")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
 
 // =============================================================
 //  DEMO STORE (only used when MODE === 'demo')
@@ -65,7 +70,8 @@ function freshStore() {
       sections.push({ id: sid, chapter_id: cid, numeral: s.numeral, title: s.title, order_index: s.order_index });
       for (const l of s.lessons) {
         lessons.push({ id: uid(), section_id: sid, title: l.title, slug: l.slug,
-          lenses: (l.lenses || []).slice(), state: l.state, order_index: l.order_index, content: null });
+          lenses: (l.lenses || []).slice(), state: l.state, order_index: l.order_index,
+          published: false, content: null });
       }
     }
   }
@@ -249,4 +255,125 @@ export async function getChapterTree(slug) {
   if (ids.length) { const r = await supabase.from("lessons").select("*").in("section_id", ids).order("order_index"); les = r.data || []; }
   const bySec = {}; les.forEach(l => { (bySec[l.section_id] || (bySec[l.section_id] = [])).push(l); });
   return { ...c, sections: (secs || []).map(s => ({ ...s, lessons: bySec[s.id] || [] })) };
+}
+
+// =============================================================
+//  LESSON CONTENT GENERATION  (Claude API via Edge Function)
+// =============================================================
+
+// gather existing slugs so generated URLs never collide
+async function allLessonSlugs(exceptId) {
+  let rows;
+  if (MODE === "demo") rows = store.lessons;
+  else { const { data } = await supabase.from("lessons").select("id,slug"); rows = data || []; }
+  return rows.filter(l => l.id !== exceptId).map(l => l.slug).filter(Boolean);
+}
+export async function uniqueLessonSlug(base, exceptId) {
+  let s = slugify(base) || "lesson";
+  const taken = new Set(await allLessonSlugs(exceptId));
+  if (!taken.has(s)) return s;
+  let i = 2; while (taken.has(`${s}-${i}`)) i++;
+  return `${s}-${i}`;
+}
+
+export async function setLessonPublished(id, published) {
+  return updateLesson(id, { published: !!published });
+}
+
+export async function getLessonBySlug(slug) {
+  if (MODE === "demo") {
+    const l = store.lessons.find(x => x.slug === slug);
+    if (!l) return null;
+    const section = store.sections.find(s => s.id === l.section_id) || null;
+    const chapter = section ? store.chapters.find(c => c.id === section.chapter_id) || null : null;
+    return { ...l, section, chapter };
+  }
+  const { data: l } = await supabase.from("lessons").select("*").eq("slug", slug).single();
+  if (!l) return null;
+  const { data: section } = await supabase.from("sections").select("*").eq("id", l.section_id).single();
+  let chapter = null;
+  if (section) { const r = await supabase.from("chapters").select("*").eq("id", section.chapter_id).single(); chapter = r.data; }
+  return { ...l, section, chapter };
+}
+
+// Generate a lesson's content. Live = Supabase Edge Function (real Claude API);
+// demo = a local sample so the whole flow is previewable with no backend.
+export async function generateLesson(lessonId, name, currentLenses) {
+  let content;
+  if (MODE === "demo") {
+    await new Promise(r => setTimeout(r, 900));   // mimic latency
+    content = sampleContent(name, currentLenses);
+  } else {
+    const { data, error } = await supabase.functions.invoke("generate-lesson", { body: { name } });
+    if (error) throw new Error(error.message || "Generation request failed");
+    if (!data || data.error) throw new Error((data && data.error) || "Generation failed");
+    content = data.content;
+  }
+  const slug = await uniqueLessonSlug(name, lessonId);
+  const patch = { content, slug };
+  if (Array.isArray(content.lenses) && content.lenses.length && (!currentLenses || !currentLenses.length)) {
+    patch.lenses = content.lenses.filter(k => LENS_KEYS.includes(k));
+  }
+  await updateLesson(lessonId, patch);
+  return { content, slug };
+}
+
+// --- demo-only sample content (mirrors the Edge Function's JSON shape) ---
+function sampleContent(name, lenses) {
+  const L = (lenses && lenses.length) ? lenses : ["physio", "patho", "patho", "pharm"];
+  const pick = i => L[Math.min(i, L.length - 1)] || "physio";
+  return {
+    sample: true,
+    subtitle: `A ground-up walk through ${name} for USMLE Step 1 — built from mechanism to bedside.`,
+    lenses: Array.from(new Set(L)),
+    readingTime: 8,
+    glance: [
+      `${name} is best understood by starting from normal structure and function, then asking what breaks.`,
+      "Every clinical finding below traces back to a single underlying mechanism.",
+      "The exam rewards reasoning from mechanism, not memorized lists.",
+    ],
+    sections: [
+      {
+        lens: pick(0), title: "Foundations: the normal picture",
+        blocks: [
+          { type: "prose", text: `Before anything goes wrong, you have to see the normal state clearly. For *${name}*, that means anchoring the relevant anatomy and physiology so each later finding has somewhere to attach. **Set up the baseline first** — the questions that feel like memorization usually collapse into one mechanism once the normal picture is in place.` },
+          { type: "flow", steps: ["Normal structure", "Normal function", "Regulatory control", "Set point maintained"], note: "Hold this baseline in mind — disease is a deviation from it." },
+          { type: "callout", variant: "exam", title: "How they ask it", text: "Step 1 often gives you a normal-physiology stem and asks you to predict the *first* change when one variable is perturbed. Reason forward from the baseline." },
+        ],
+      },
+      {
+        lens: pick(1), title: "Mechanism: what actually breaks",
+        blocks: [
+          { type: "prose", text: `Now perturb the system. The core lesion in ${name} produces a predictable cascade: the initial insult shifts one variable, compensation kicks in, and the compensation itself explains many of the downstream findings. Trace the arrow — don't jump to the diagnosis.` },
+          { type: "callout", variant: "pitfall", title: "Classic trap", text: "Students attribute a finding to the disease directly when it's really the *compensation* that produces it. The distractor option is the direct effect; the credited answer is the compensatory one." },
+        ],
+      },
+      {
+        lens: pick(2), title: "How patients present",
+        blocks: [
+          { type: "prose", text: "Presentation is just mechanism made visible. Each symptom and sign should map back to a step in the cascade above, which is why a single vignette can list several findings that all share one cause." },
+          { type: "compare", columns: ["Early", "Late"], rows: [
+            ["Dominant driver", "Compensation intact", "Compensation exhausted"],
+            ["Typical finding", "Subtle / exertional", "Overt / at rest"],
+            ["Reversibility", "Often reversible", "Often fixed"],
+          ] },
+          { type: "callout", variant: "mnemonic", title: "Memory hook", text: "Tie the findings to the cascade order — if you can recite the mechanism, the sign list reconstructs itself." },
+        ],
+      },
+      {
+        lens: pick(3), title: "Diagnosis & management",
+        blocks: [
+          { type: "prose", text: `Diagnosis confirms the mechanism you already predicted; treatment targets the step in the cascade you can most safely interrupt. For ${name}, match each intervention to the arrow it blocks — that's also how second-order ("what's the mechanism of the drug they chose?") questions are written.` },
+          { type: "callout", variant: "clinical", title: "Clinical correlation", text: "First-line management usually addresses the earliest reversible step; later therapy manages the consequences once compensation has failed." },
+        ],
+      },
+    ],
+    highYield: [
+      `Start every ${name} question from the normal baseline, then perturb one variable.`,
+      "Distinguish the direct effect of the lesion from its compensatory response — exams test the difference.",
+      "Each clinical finding maps to a specific step in the mechanism; learn the chain, not the list.",
+      "Match treatments to the step of the cascade they interrupt.",
+      "Second-order questions ask the mechanism of the answer you just chose — be ready to justify it.",
+    ],
+  };
 }

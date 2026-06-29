@@ -695,3 +695,54 @@ a { color: inherit; }
   .lesson-nav { grid-template-columns: 1fr; }
   .lnav.next { text-align: left; }
 }
+
+/* ============================================================
+   GENERATED LESSON extras (high-yield box, flow diagram)
+   ============================================================ */
+.topic.dim { opacity: .32; transition: opacity .2s; }
+
+/* high-yield exam box at the end of a generated lesson */
+.hybox {
+  margin: 40px 0 8px; border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--hy) 38%, var(--line));
+  background: color-mix(in srgb, var(--hy) 9%, var(--surface));
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.hybox-h {
+  display: flex; align-items: center; gap: 9px; padding: 14px 20px;
+  font-family: var(--f-display); font-weight: 600; font-size: 1.05rem; color: var(--ink);
+  border-bottom: 1px solid color-mix(in srgb, var(--hy) 24%, var(--line));
+  background: color-mix(in srgb, var(--hy) 13%, transparent);
+}
+.hybox-h svg { width: 20px; height: 20px; color: var(--hy); }
+.hybox ul { list-style: none; margin: 0; padding: 14px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+.hybox li { position: relative; padding-left: 22px; color: var(--ink); line-height: 1.55; }
+.hybox li::before {
+  content: ""; position: absolute; left: 4px; top: .55em; width: 7px; height: 7px;
+  border-radius: 2px; background: var(--hy); transform: rotate(45deg);
+}
+
+/* flow diagram (pathways / causal chains / feedback loops) */
+.lflow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: center; padding: 6px 0; }
+.lflow-step {
+  font-family: var(--f-body); font-weight: 600; font-size: .86rem; color: var(--ink);
+  background: var(--surface); border: 1px solid color-mix(in srgb, var(--physio) 40%, var(--line));
+  border-radius: 10px; padding: 9px 13px; box-shadow: var(--shadow-sm); text-align: center;
+}
+.lflow-arrow { color: var(--brand); display: inline-flex; flex: none; }
+.lflow-arrow svg { width: 20px; height: 20px; }
+@media (max-width: 560px) {
+  .lflow { flex-direction: column; align-items: stretch; }
+  .lflow-step { text-align: left; }
+  .lflow-arrow { transform: rotate(90deg); align-self: center; }
+}
+
+/* unpublished-preview flag on the public lesson page */
+.preview-flag {
+  display: flex; align-items: center; gap: 9px; margin: 18px 0 -8px;
+  font-size: .82rem; font-weight: 600; color: var(--hy);
+  background: color-mix(in srgb, var(--hy) 12%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--hy) 32%, var(--line));
+  border-radius: 999px; padding: 8px 15px; width: fit-content;
+}
+.preview-flag svg { width: 16px; height: 16px; }

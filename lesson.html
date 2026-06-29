@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson — MedLens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+    Med<b>Lens</b>
+  </a>
+  <a class="crumb" id="backCrumb" href="index.html" style="margin-left:14px">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span id="backLabel">Back</span>
+  </a>
+  <span class="topbar-spacer"></span>
+  <button class="iconbtn" data-theme-toggle aria-label="Toggle dark mode">
+    <svg class="moon" viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <svg class="sun" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.6M12 18.9v2.6M21.5 12h-2.6M5.1 12H2.5M18.7 5.3l-1.8 1.8M7.1 16.9l-1.8 1.8M18.7 18.7l-1.8-1.8M7.1 7.1 5.3 5.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
+</header>
+
+<div id="app"><div style="text-align:center;padding:90px 20px;color:var(--ink-faint)">Loading…</div></div>
+
+<script type="module">
+import * as DB from "./db.js";
+
+const LABEL = { anatomy:"Anatomy", embryo:"Embryology", histo:"Histology", physio:"Physiology", patho:"Pathology", pharm:"Pharmacology", micro:"Microbiology", biochem:"Biochemistry" };
+const CALL = {  // content variant -> [css class, label, icon]
+  exam:     ["hy", "How they ask it", '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'],
+  clinical: ["clinical", "Clinical correlation", '<svg viewBox="0 0 24 24" fill="none"><path d="M9 3v4M15 3v4M5 8h14l-1 11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>'],
+  pitfall:  ["pitfall", "Watch out", '<svg viewBox="0 0 24 24" fill="none"><path d="M12 4l9 16H3L12 4Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'],
+  mnemonic: ["mnemo", "Mnemonic", '<svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.7.6-1 1-1 2H9c0-1-.3-1.4-1-2A6 6 0 0 1 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>'],
+};
+
+(function theme(){
+  try { const t = localStorage.getItem("medlens-theme"); if (t) document.documentElement.setAttribute("data-theme", t); } catch(e){}
+  document.addEventListener("click", e => {
+    const b = e.target.closest("[data-theme-toggle]"); if (!b) return;
+    const n = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", n);
+    try { localStorage.setItem("medlens-theme", n); } catch(e){}
+  });
+})();
+
+function h(tag, props={}, ...kids){
+  const e=document.createElement(tag);
+  for(const k in props){ const v=props[k]; if(v==null||v===false)continue;
+    if(k==="class")e.className=v; else if(k==="html")e.innerHTML=v;
+    else if(k==="style"&&typeof v==="object")Object.assign(e.style,v); else e.setAttribute(k,v); }
+  for(const kid of kids.flat()){ if(kid==null||kid===false)continue; e.append(kid.nodeType?kid:document.createTextNode(kid)); }
+  return e;
+}
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const md  = s => esc(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/`(.+?)`/g,"<code>$1</code>");
+
+const slug = new URLSearchParams(location.search).get("slug");
+
+(async function(){
+  const app = document.getElementById("app");
+  if (!slug){ app.innerHTML=""; app.append(notice("No lesson specified","Add ?slug=… to the URL.")); return; }
+  let lesson;
+  try { lesson = await DB.getLessonBySlug(slug); }
+  catch(ex){ app.innerHTML=""; app.append(notice("Couldn’t load this lesson", ex?.message||"")); return; }
+  if (!lesson){ app.innerHTML=""; app.append(notice("Lesson not found","No lesson with slug “"+slug+"”.")); return; }
+
+  const isAdmin = await DB.auth.isAdmin().catch(()=>false);
+
+  // back crumb -> parent chapter syllabus
+  if (lesson.chapter){
+    document.getElementById("backCrumb").setAttribute("href","chapter.html?slug="+encodeURIComponent(lesson.chapter.slug));
+    document.getElementById("backLabel").textContent = lesson.chapter.title;
+  }
+
+  if (!lesson.content){ app.innerHTML=""; app.append(notice("Not generated yet","This lesson hasn’t been generated. Open the dashboard and press “Generate”.", lesson)); return; }
+  if (!lesson.published && !isAdmin){ app.innerHTML=""; app.append(notice("Not published yet","This lesson isn’t public. An admin can publish it from the dashboard.", lesson)); return; }
+
+  render(lesson, !lesson.published);
+})();
+
+function notice(title, sub, lesson){
+  return h("div",{class:"wrap",style:{padding:"80px 0",textAlign:"center"}},
+    h("h1",{style:{fontFamily:"var(--f-display)"}},title),
+    h("p",{style:{color:"var(--ink-soft)"}},sub),
+    h("p",{}, lesson && lesson.chapter
+      ? h("a",{class:"btn btn-ghost",href:"chapter.html?slug="+encodeURIComponent(lesson.chapter.slug)},"← "+lesson.chapter.title)
+      : h("a",{class:"btn btn-ghost",href:"index.html"},"← All chapters")));
+}
+
+function render(lesson, preview){
+  const c = lesson.content;
+  const app = document.getElementById("app"); app.innerHTML="";
+  const present = (c.lenses && c.lenses.length) ? c.lenses
+    : Array.from(new Set((c.sections||[]).map(s=>s.lens).filter(Boolean)));
+
+  if (preview) app.append(h("div",{class:"wrap"}, h("div",{class:"preview-flag"},
+    h("span",{html:'<svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.8"/></svg>'}),
+    "Unpublished preview — visible to admins only.")));
+
+  // header
+  app.append(h("section",{class:"chapthead"}, h("div",{class:"wrap"},
+    h("p",{class:"eyebrow"}, [lesson.chapter && lesson.chapter.title, lesson.section && lesson.section.numeral, lesson.section && lesson.section.title].filter(Boolean).join(" · ")),
+    h("h1",{}, lesson.title),
+    c.subtitle ? h("p",{class:"sub"}, c.subtitle) : null,
+    h("div",{class:"chap-stats"},
+      stat(present.length, "Lenses"),
+      stat("~"+(c.readingTime||6), "Min read"),
+      stat((c.sections||[]).length, "Parts"),
+      stat("High", "Yield")))));
+
+  // filter chips
+  if (present.length > 1){
+    const chips = h("div",{class:"chips",role:"group","aria-label":"Filter by discipline"}, chip("all","All lenses",true));
+    present.forEach(k=>chips.append(chip(k, LABEL[k]||k, false)));
+    app.append(h("div",{class:"filterbar"}, h("div",{class:"wrap"}, chips)));
+  }
+
+  const tocOl = h("ol");
+  const main = h("main",{class:"chapmain"});
+
+  if (Array.isArray(c.glance) && c.glance.length){
+    main.append(h("div",{class:"glance"},
+      h("div",{class:"glance-h"}, h("span",{html:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/></svg>'}), "At a glance"),
+      h("ul",{}, ...c.glance.map(t=>h("li",{html:md(t)})))));
+  }
+
+  (c.sections||[]).forEach((s,i)=>{
+    const id="p"+(i+1); const lens = LENS_KEY(s.lens);
+    tocOl.append(h("li",{}, h("a",{href:"#"+id}, (i+1)+" · "+(s.title||"Part "+(i+1)))));
+    const block = h("div",{class:"lens "+lens,"data-lens":lens},
+      h("span",{class:"lens-label"}, h("i",{class:"pin"}), LABEL[lens]||lens),
+      h("h4",{}, s.title||""));
+    (s.blocks||[]).forEach(b => block.append(renderBlock(b)));
+    main.append(h("article",{class:"topic",id,"data-lens":lens},
+      h("header",{class:"topic-head"},
+        h("span",{class:"topic-kicker"}, "Part "+(i+1)),
+        h("h2",{}, s.title||""),
+        h("div",{class:"lensmap"}, h("span",{style:`--c:var(--${lens})`}, LABEL[lens]||lens))),
+      block));
+  });
+
+  if (Array.isArray(c.highYield) && c.highYield.length){
+    main.append(h("div",{class:"hybox"},
+      h("div",{class:"hybox-h"}, h("span",{html:'<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5L12 3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>'}), "High-yield for the exam"),
+      h("ul",{}, ...c.highYield.map(t=>h("li",{html:md(t)})))));
+  }
+
+  main.append(h("nav",{class:"lesson-nav","aria-label":"Lesson navigation"},
+    h("a",{class:"lnav prev", href: lesson.chapter ? "chapter.html?slug="+encodeURIComponent(lesson.chapter.slug) : "index.html"},
+      h("span",{class:"lnav-k"},"Back to"), h("span",{class:"lnav-t"}, lesson.chapter ? lesson.chapter.title+" syllabus" : "All chapters")),
+    h("a",{class:"lnav next", href:"#", "data-stub":""},
+      h("span",{class:"lnav-k"},"Keep going"), h("span",{class:"lnav-t"},"Next lesson →"))));
+
+  const toc = h("nav",{class:"toc","data-open":"false","aria-label":"In this lesson"},
+    h("button",{class:"toc-mobile-toggle","aria-expanded":"false"}, "In this lesson",
+      h("span",{html:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'})),
+    h("div",{class:"toc-inner"}, h("div",{class:"toc-h"},"In this lesson"), tocOl));
+
+  app.append(h("div",{class:"wrap"}, h("div",{class:"chapbody"}, toc, main)));
+  app.append(h("footer",{class:"foot"}, h("div",{class:"wrap foot-in"},
+    h("div",{}, h("a",{class:"brand",href:"index.html"}, h("span",{class:"brand-mark",html:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'}),"Med",h("b",{},"Lens")),
+      h("p",{class:"disclaim"}, (c.sample?"Sample content generated in demo mode · ":"")+"For study only — not medical advice.")),
+    lesson.chapter ? h("a",{class:"btn btn-ghost",href:"chapter.html?slug="+encodeURIComponent(lesson.chapter.slug)},"← All "+lesson.chapter.title.toLowerCase()+" lessons") : null)));
+
+  document.title = lesson.title + " — MedLens";
+  bindFilter(); bindToc();
+}
+
+function renderBlock(b){
+  if (!b || !b.type) return null;
+  if (b.type === "prose")   return h("p",{html:md(b.text||"")});
+  if (b.type === "heading") return h("h4",{style:{marginTop:"18px"}}, b.text||"");
+  if (b.type === "list")    return h("ul",{class:"tidy"}, ...(b.items||[]).map(t=>h("li",{html:md(t)})));
+  if (b.type === "callout"){
+    const [cls,deflabel,icon] = CALL[b.variant] || CALL.clinical;
+    return h("div",{class:"call "+cls},
+      h("span",{class:"ic",html:icon}),
+      h("div",{class:"call-t"}, b.title || deflabel),
+      h("p",{html:md(b.text||"")}));
+  }
+  if (b.type === "flow"){
+    const steps = b.steps||[];
+    const flow = h("div",{class:"lflow"});
+    steps.forEach((st,i)=>{ flow.append(h("span",{class:"lflow-step"}, st)); if(i<steps.length-1) flow.append(h("span",{class:"lflow-arrow",html:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'})); });
+    return h("figure",{class:"figure"}, h("div",{class:"canvas"}, flow), b.note?h("figcaption",{}, h("span",{}, b.note)):null);
+  }
+  if (b.type === "compare"){
+    const cols = b.columns||["",""]; const rows=b.rows||[];
+    return h("div",{class:"compare-scroll"}, h("table",{class:"compare"},
+      h("thead",{}, h("tr",{}, h("th",{}), ...cols.map(c=>h("th",{},c)))),
+      h("tbody",{}, ...rows.map(r=>h("tr",{}, h("th",{}, r[0]||""), ...r.slice(1).map(v=>h("td",{html:md(v||"")})))))));
+  }
+  return null;
+}
+
+function LENS_KEY(k){ return (LABEL[k] ? k : "physio"); }
+function stat(n,l){ return h("div",{class:"stat"}, h("div",{class:"n"},String(n)), h("div",{class:"l"},l)); }
+function chip(key,label,on){
+  const c=h("button",{class:"chip"+(key==="all"?" all":""),"data-filter":key,"aria-pressed":on?"true":"false"});
+  if(key!=="all"){ c.setAttribute("style",`--accent:var(--${key})`); c.append(h("i",{class:"dot"})); }
+  c.append(document.createTextNode(label)); return c;
+}
+function bindFilter(){
+  const chips=[...document.querySelectorAll(".chip[data-filter]")];
+  const topics=[...document.querySelectorAll(".topic[data-lens]")];
+  chips.forEach(chip=>chip.addEventListener("click",()=>{
+    const f=chip.getAttribute("data-filter");
+    chips.forEach(c=>c.setAttribute("aria-pressed", c===chip?"true":"false"));
+    topics.forEach(t=>t.classList.toggle("dim", !(f==="all"||t.getAttribute("data-lens")===f)));
+  }));
+}
+function bindToc(){
+  const t=document.querySelector(".toc"); if(!t) return;
+  const btn=t.querySelector(".toc-mobile-toggle");
+  btn && btn.addEventListener("click",()=>{ const o=t.getAttribute("data-open")==="true"; t.setAttribute("data-open",String(!o)); btn.setAttribute("aria-expanded",String(!o)); });
+  t.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{ if(matchMedia("(max-width:999px)").matches) t.setAttribute("data-open","false"); }));
+}
+</script>
+</body>
+</html>

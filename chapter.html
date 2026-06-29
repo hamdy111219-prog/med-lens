@@ -128,7 +128,9 @@ function render(c){
       bar));
     lessons.forEach(l => {
       const lenses = l.lenses && l.lenses.length ? l.lenses : [];
-      const href = LESSON_PAGES[l.slug] || "#";
+      let href = "#";
+      if (LESSON_PAGES[l.slug]) href = LESSON_PAGES[l.slug];                 // hand-built static lesson
+      else if (l.content && l.published && l.slug) href = "lesson.html?slug=" + encodeURIComponent(l.slug);
       const row = h("a",{class:"lrow","data-lens":lenses.join(" "), href, ...(href==="#"?{"data-stub":""}:{})},
         h("span",{class:"lrow-ticks","aria-hidden":"true"}, ...(lenses.length?lenses:["physio"]).map(k=>h("i",{style:`background:var(--${k})`}))),
         h("span",{class:"lrow-title"}, l.title),
