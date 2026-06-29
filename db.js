@@ -336,22 +336,28 @@ function sampleContent(name, lenses) {
       {
         lens: pick(0), title: "Foundations: the normal picture",
         blocks: [
-          { type: "prose", text: `Before anything goes wrong, you have to see the normal state clearly. For *${name}*, that means anchoring the relevant anatomy and physiology so each later finding has somewhere to attach. **Set up the baseline first** — the questions that feel like memorization usually collapse into one mechanism once the normal picture is in place.` },
-          { type: "flow", steps: ["Normal structure", "Normal function", "Regulatory control", "Set point maintained"], note: "Hold this baseline in mind — disease is a deviation from it." },
+          { type: "anchor", text: `Think of *${name}* the way you'd think about a machine before it jams: learn what each part does when everything works, and the failures later will feel obvious instead of arbitrary.` },
+          { type: "prose", text: `Before anything goes wrong, you have to see the normal state clearly. **Set up the baseline first** — the questions that feel like memorization usually collapse into one mechanism once the normal picture is in place. On the exam, ==a stem that gives you a normal value and changes one variable== is really asking you to predict the next step in this baseline.` },
+          { type: "figure", caption: "Schematic: the normal control loop holds the set point steady.", svg: '<svg viewBox="0 0 460 150" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="20" y="55" width="110" height="40" rx="8"/><rect x="175" y="55" width="110" height="40" rx="8"/><rect x="330" y="55" width="110" height="40" rx="8"/><path d="M130 75h40M285 75h40" stroke-linecap="round"/><path d="M165 70l10 5-10 5M320 70l10 5-10 5" stroke-linejoin="round"/><path d="M385 95v30H75V95" stroke-dasharray="5 5"/><path d="M70 110l5 10 5-10" stroke-linejoin="round"/></g><g font-family="sans-serif" font-size="13" fill="currentColor" text-anchor="middle"><text x="75" y="79">Sensor</text><text x="230" y="79">Set point</text><text x="385" y="79">Effector</text><text x="230" y="140" font-size="11">negative feedback</text></g></svg>' },
           { type: "callout", variant: "exam", title: "How they ask it", text: "Step 1 often gives you a normal-physiology stem and asks you to predict the *first* change when one variable is perturbed. Reason forward from the baseline." },
         ],
       },
       {
         lens: pick(1), title: "Mechanism: what actually breaks",
         blocks: [
-          { type: "prose", text: `Now perturb the system. The core lesion in ${name} produces a predictable cascade: the initial insult shifts one variable, compensation kicks in, and the compensation itself explains many of the downstream findings. Trace the arrow — don't jump to the diagnosis.` },
+          { type: "prose", text: `Now perturb the system. The core lesion in ${name} produces a predictable cascade: the initial insult shifts one variable, ==compensation kicks in==, and the compensation itself explains many of the downstream findings. Trace the arrow — don't jump to the diagnosis.` },
           { type: "callout", variant: "pitfall", title: "Classic trap", text: "Students attribute a finding to the disease directly when it's really the *compensation* that produces it. The distractor option is the direct effect; the credited answer is the compensatory one." },
         ],
       },
       {
         lens: pick(2), title: "How patients present",
         blocks: [
-          { type: "prose", text: "Presentation is just mechanism made visible. Each symptom and sign should map back to a step in the cascade above, which is why a single vignette can list several findings that all share one cause." },
+          { type: "prose", text: "Presentation is just mechanism made visible. Each symptom and sign maps back to a step in the cascade above, which is why a single vignette can list several findings that all share one cause." },
+          { type: "image", query: "heart anatomy diagram", shows: "a labeled anatomical reference for orientation",
+            caption: "A real, attributed image is fetched automatically when a lesson calls for one.",
+            url: "https://commons.wikimedia.org/wiki/Special:FilePath/Diagram%20of%20the%20human%20heart%20(cropped).svg",
+            credit: "Wapcaplet / ZooFari · CC BY-SA 3.0", source: "Wikimedia Commons",
+            pageUrl: "https://commons.wikimedia.org/wiki/File:Diagram_of_the_human_heart_(cropped).svg" },
           { type: "compare", columns: ["Early", "Late"], rows: [
             ["Dominant driver", "Compensation intact", "Compensation exhausted"],
             ["Typical finding", "Subtle / exertional", "Overt / at rest"],

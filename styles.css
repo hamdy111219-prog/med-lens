@@ -746,3 +746,41 @@ a { color: inherit; }
   border-radius: 999px; padding: 8px 15px; width: fit-content;
 }
 .preview-flag svg { width: 16px; height: 16px; }
+
+/* ============================================================
+   TEACHING-QUALITY extras: hot highlight, anchor, images
+   ============================================================ */
+
+/* inline "hot" exam highlight — colored emphasis woven into prose */
+mark.hot {
+  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--hy) 42%, transparent) 58%);
+  color: inherit; font-weight: 600; padding: 0 .5px; border-radius: 2px;
+}
+[data-theme="dark"] mark.hot {
+  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--hy) 36%, transparent) 58%);
+}
+
+/* plain-language "anchor" — intuition box, only when a concept needs grounding */
+.anchor {
+  margin: 16px 0; padding: 14px 16px 14px 18px; border-radius: var(--radius);
+  background: color-mix(in srgb, var(--brand) 7%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--line));
+  border-left: 3px solid var(--brand);
+}
+.anchor-k {
+  display: inline-block; font-family: var(--f-display); font-size: .68rem; font-weight: 600;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: 5px;
+}
+.anchor p { margin: 0; color: var(--ink); line-height: 1.6; }
+
+/* real images (Wikimedia / Open-i) with visible credit */
+.imgfig .medimg {
+  display: block; max-width: 100%; height: auto; margin: 0 auto;
+  border-radius: 10px; border: 1px solid var(--line); background: var(--surface);
+}
+.imgfig figcaption { margin-top: 9px; }
+.imgfig figcaption .credit {
+  display: inline-block; margin-top: 3px; font-size: .74rem; color: var(--ink-faint);
+  text-decoration: none; border-bottom: 1px dotted var(--ink-faint);
+}
+.imgfig figcaption .credit:hover { color: var(--brand); border-bottom-color: var(--brand); }

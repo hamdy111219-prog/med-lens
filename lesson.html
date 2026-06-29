@@ -59,7 +59,15 @@ function h(tag, props={}, ...kids){
   return e;
 }
 const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-const md  = s => esc(s).replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/`(.+?)`/g,"<code>$1</code>");
+const md  = s => esc(s).replace(/==(.+?)==/g,'<mark class="hot">$1</mark>').replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>").replace(/\*(.+?)\*/g,"<em>$1</em>").replace(/`(.+?)`/g,"<code>$1</code>");
+function sanitizeSVG(s){
+  let t = String(s||"");
+  if (!/<svg[\s>]/i.test(t)) return "";
+  t = t.replace(/<script[\s\S]*?<\/script>/gi,"").replace(/<foreignObject[\s\S]*?<\/foreignObject>/gi,"");
+  t = t.replace(/\son\w+\s*=\s*"[^"]*"/gi,"").replace(/\son\w+\s*=\s*'[^']*'/gi,"");
+  t = t.replace(/(href|xlink:href)\s*=\s*("|')\s*(javascript:|data:)[^"']*\2/gi,"");
+  return t;
+}
 
 const slug = new URLSearchParams(location.search).get("slug");
 
@@ -185,11 +193,36 @@ function renderBlock(b){
       h("div",{class:"call-t"}, b.title || deflabel),
       h("p",{html:md(b.text||"")}));
   }
+  if (b.type === "anchor"){
+    return h("div",{class:"anchor"},
+      h("span",{class:"anchor-k"},"Start here"),
+      h("p",{html:md(b.text||"")}));
+  }
   if (b.type === "flow"){
     const steps = b.steps||[];
     const flow = h("div",{class:"lflow"});
     steps.forEach((st,i)=>{ flow.append(h("span",{class:"lflow-step"}, st)); if(i<steps.length-1) flow.append(h("span",{class:"lflow-arrow",html:'<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'})); });
     return h("figure",{class:"figure"}, h("div",{class:"canvas"}, flow), b.note?h("figcaption",{}, h("span",{}, b.note)):null);
+  }
+  if (b.type === "figure"){
+    const svg = sanitizeSVG(b.svg);
+    if (!svg) return null;
+    return h("figure",{class:"figure"}, h("div",{class:"canvas",html:svg}), b.caption?h("figcaption",{}, h("span",{}, b.caption)):null);
+  }
+  if (b.type === "image"){
+    if (!b.url) return null;                 // unresolved lookup — skip rather than show broken
+    const fig = h("figure",{class:"figure imgfig"});
+    const img = h("img",{class:"medimg", src:b.url, alt:b.alt||b.shows||b.caption||"", loading:"lazy"});
+    img.addEventListener("error",()=>fig.remove());   // hide if the file fails to load
+    fig.append(img);
+    const cap = h("figcaption",{});
+    if (b.caption) cap.append(h("span",{}, b.caption));
+    const credit = b.credit ? (b.source ? b.credit+" — "+b.source : b.credit) : (b.source||"");
+    if (credit) cap.append(b.pageUrl
+      ? h("a",{class:"credit",href:b.pageUrl,target:"_blank",rel:"noopener"}, "Source: "+credit)
+      : h("span",{class:"credit"}, "Source: "+credit));
+    fig.append(cap);
+    return fig;
   }
   if (b.type === "compare"){
     const cols = b.columns||["",""]; const rows=b.rows||[];
