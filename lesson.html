@@ -185,7 +185,7 @@ function renderBlock(b){
   if (!b || !b.type) return null;
   if (b.type === "prose")   return h("p",{html:md(b.text||"")});
   if (b.type === "heading") return h("h4",{style:{marginTop:"18px"}}, b.text||"");
-  if (b.type === "list")    return h("ul",{class:"tidy"}, ...(b.items||[]).map(t=>h("li",{html:md(t)})));
+  if (b.type === "list")    return h(b.ordered ? "ol" : "ul",{class:"tidy"}, ...(b.items||[]).map(t=>h("li",{html:md(t)})));
   if (b.type === "callout"){
     const [cls,deflabel,icon] = CALL[b.variant] || CALL.clinical;
     return h("div",{class:"call "+cls},

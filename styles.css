@@ -505,6 +505,15 @@ a { color: inherit; }
   border-radius: 50%; background: var(--accent);
 }
 .lens ul.tidy li b, .lens ul.tidy li strong { color: var(--ink); }
+.lens ol.tidy { list-style: none; padding: 0; display: grid; gap: 9px; margin: 4px 0 14px; counter-reset: tidy; }
+.lens ol.tidy li { display: flex; gap: 11px; color: var(--ink-soft); counter-increment: tidy; }
+.lens ol.tidy li::before {
+  content: counter(tidy); flex: none; width: 19px; height: 19px; margin-top: 1px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent); font: 600 .72rem/1 var(--f-mono);
+}
+.lens ol.tidy li b, .lens ol.tidy li strong { color: var(--ink); }
 
 /* compare table */
 .compare { width: 100%; border-collapse: collapse; margin: 6px 0 8px; font-size: .92rem; }

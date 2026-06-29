@@ -369,7 +369,12 @@ function sampleContent(name, lenses) {
       {
         lens: pick(3), title: "Diagnosis & management",
         blocks: [
-          { type: "prose", text: `Diagnosis confirms the mechanism you already predicted; treatment targets the step in the cascade you can most safely interrupt. For ${name}, match each intervention to the arrow it blocks — that's also how second-order ("what's the mechanism of the drug they chose?") questions are written.` },
+          { type: "prose", text: `Diagnosis confirms the mechanism you already predicted; treatment targets the step in the cascade you can most safely interrupt. For ${name}, work through it in order:` },
+          { type: "list", ordered: true, items: [
+            "Confirm the mechanism with the single most specific test.",
+            "Interrupt the earliest reversible step in the cascade.",
+            "Manage the downstream consequences once compensation fails.",
+          ] },
           { type: "callout", variant: "clinical", title: "Clinical correlation", text: "First-line management usually addresses the earliest reversible step; later therapy manages the consequences once compensation has failed." },
         ],
       },
