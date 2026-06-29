@@ -247,6 +247,7 @@ async function viewChapter() {
     h("div", { style: { display: "flex", gap: "8px" } },
       h("a", { class: "btn btn-ghost", href: "chapter.html?slug=" + encodeURIComponent(c.slug), target: "_blank", rel: "noopener" }, "View ↗"),
       h("button", { class: "btn btn-ghost", onclick: () => editChapter(c) }, "Edit chapter"),
+      h("button", { class: "btn btn-ghost", onclick: () => importChecklist(c) }, h("span", { html: ICON.spark, style: { display: "inline-flex", width: "15px" } }), "Import checklist"),
       h("button", { class: "btn btn-primary", onclick: () => editSection(null) }, h("span", { html: ICON.plus, style: { display: "inline-flex", width: "16px" } }), "New section"))));
   view.append(h("div", { style: { display: "flex", gap: "10px", margin: "-6px 0 18px", alignItems: "center" } },
     h("span", { class: "pill " + c.status }, c.status),
@@ -305,9 +306,10 @@ async function viewSection() {
       h("span", { class: "ticks" }, ...(l.lenses.length ? l.lenses : ["physio"]).map(k =>
         h("i", { style: `background:var(--${k})` }))),
       h("div", { class: "grow" },
-        h("div", { class: "t", onclick: () => editLesson(l) }, l.title),
+        h("div", { class: "t", onclick: () => editLesson(l) }, (l.high_yield ? "⭐ " : "") + l.title),
         h("div", { class: "m" },
           ...l.lenses.map(k => h("span", {}, lensLabel(k))),
+          (l.must_cover && l.must_cover.length) ? h("span", { style: { color: "var(--brand)" } }, l.must_cover.length + " points") : null,
           l.slug ? h("span", { style: { fontFamily: "var(--f-mono)", fontSize: ".72rem" } }, "/" + l.slug) : null,
           hasContent ? h("span", { class: "pill done", style: { fontSize: ".55rem" } }, l.published ? "Live" : "Generated · hidden") : null)),
       h("span", { class: "pill " + l.state }, stateLabel(l.state)),
@@ -325,7 +327,7 @@ async function generateFor(l, btn) {
   const label = btn.innerHTML;
   btn.disabled = true; btn.innerHTML = "Generating…";
   try {
-    await DB.generateLesson(l.id, l.title, l.lenses);
+    await DB.generateLesson(l.id, l.title, l.lenses, l.must_cover);
     toast(MODE === "demo" ? "Lesson generated (demo sample)" : "Lesson generated");
     render();
   } catch (ex) {
@@ -394,12 +396,21 @@ function editLesson(l) {
     title: l ? "Edit lesson" : "New lesson",
     fields: [
       { name: "title", label: "Title", placeholder: "e.g. Action Potentials" },
-      { name: "slug", label: "Slug", hint: "Optional — for the future lesson page URL.", placeholder: "action-potentials" },
+      { name: "slug", label: "Slug", hint: "Optional — for the lesson page URL.", placeholder: "action-potentials" },
       { name: "lenses", label: "Discipline lenses", type: "lenses" },
+      { name: "high_yield", label: "High-yield (⭐)", type: "select", options: [{ value: "no", label: "No" }, { value: "yes", label: "Yes — high-yield" }] },
+      { name: "must_cover_text", label: "Must-cover points", type: "textarea", hint: "One point per line. Generation covers every point and builds the high-yield box from them." },
       { name: "state", label: "Status", type: "select", options: STATES.map(x => ({ value: x.key, label: x.label })) },
     ],
-    values: l || { state: "new", lenses: [] },
-    onSave: async v => {
+    values: l
+      ? { ...l, high_yield: l.high_yield ? "yes" : "no", must_cover_text: (l.must_cover || []).join("\n") }
+      : { state: "new", lenses: [], high_yield: "no", must_cover_text: "" },
+    onSave: async raw => {
+      const v = {
+        title: raw.title, slug: raw.slug, lenses: raw.lenses, state: raw.state,
+        high_yield: raw.high_yield === "yes",
+        must_cover: (raw.must_cover_text || "").split("\n").map(s => s.trim()).filter(Boolean),
+      };
       if (!v.slug) v.slug = slugify(v.title);
       if (l) { await DB.updateLesson(l.id, v); toast("Lesson saved"); }
       else { await DB.createLesson(state.sectionId, v); toast("Lesson added"); }
@@ -409,6 +420,63 @@ function editLesson(l) {
 }
 function removeLesson(l) {
   confirmModal("Delete lesson?", `“${l.title}” will be permanently removed.`, async () => { await DB.deleteLesson(l.id); toast("Lesson deleted"); render(); });
+}
+
+/* ---------- checklist import ---------- */
+function lensForName(name) {
+  const n = (name || "").toLowerCase();
+  const map = [["embryo", "embryo"], ["anatom", "anatomy"], ["physiolog", "physio"], ["histolog", "histo"],
+    ["patholog", "patho"], ["pharmacolog", "pharm"], ["microbiolog", "micro"], ["biochem", "biochem"]];
+  for (const [w, k] of map) if (n.includes(w)) return k;
+  return "";
+}
+function parseChecklist(md) {
+  const lines = (md || "").split(/\r?\n/);
+  const sections = []; let sec = null, lesson = null;
+  const tidy = s => s.replace(/\s+/g, " ").trim();
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, "");
+    let m;
+    if ((m = line.match(/^##\s+(.+)$/)) && !line.startsWith("###")) {
+      let t = tidy(m[1]).replace(/^SECTION\s*\d*\s*[—\-:]*\s*/i, "");
+      sec = { numeral: "", title: t, lens: lensForName(t), lessons: [] };
+      sections.push(sec); lesson = null; continue;
+    }
+    if ((m = line.match(/^###\s+(.+)$/))) {
+      if (!sec) { sec = { numeral: "", title: "General", lens: "", lessons: [] }; sections.push(sec); }
+      let t = tidy(m[1]).replace(/^Lesson\s*[\d.]*\s*[—\-:]*\s*/i, "");
+      const hy = /[⭐★]/.test(t);
+      t = t.replace(/[⭐★]/g, "").trim();
+      lesson = { title: t, high_yield: hy, must_cover: [] };
+      sec.lessons.push(lesson); continue;
+    }
+    m = line.match(/^\s*-\s*\[[ xX]?\]\s*(.+)$/) || line.match(/^\s*[-*]\s+(.+)$/);
+    if (m) { const pt = tidy(m[1]); if (lesson && pt) lesson.must_cover.push(pt); continue; }
+  }
+  return sections.filter(s => s.lessons.length);
+}
+function importChecklist(c) {
+  const ta = h("textarea", { placeholder: "Paste your checklist markdown here…",
+    style: { width: "100%", minHeight: "260px", fontFamily: "var(--f-mono)", fontSize: ".78rem", lineHeight: "1.5" } });
+  const info = h("div", { class: "hint" }, "Uses ## sections, ### lessons (⭐ = high-yield), and “- [ ] point” lines. Creates sections, lessons, points and lens colours.");
+  const preview = h("div", { style: { fontSize: ".85rem", color: "var(--brand)", fontWeight: "600", margin: "10px 0 2px" } });
+  let parsed = [];
+  const update = () => {
+    parsed = parseChecklist(ta.value);
+    const ls = parsed.reduce((n, s) => n + s.lessons.length, 0);
+    const pts = parsed.reduce((n, s) => n + s.lessons.reduce((m, l) => m + l.must_cover.length, 0), 0);
+    preview.textContent = parsed.length ? `Will create ${parsed.length} sections · ${ls} lessons · ${pts} must-cover points.` : "Nothing parsed yet — paste a checklist above.";
+  };
+  ta.addEventListener("input", update); update();
+  const imp = h("button", { class: "btn btn-primary" }, "Import");
+  imp.addEventListener("click", async () => {
+    if (!parsed.length) { toast("Nothing to import"); return; }
+    imp.disabled = true; imp.textContent = "Importing…";
+    try { const r = await DB.importSyllabus(c.id, parsed); toast(`Imported ${r.sections} sections, ${r.lessons} lessons`); closeModal(); render(); }
+    catch (ex) { imp.disabled = false; imp.textContent = "Import"; toast(ex?.message || "Import failed"); }
+  });
+  openModal("Import checklist — " + c.title, [info, ta, preview],
+    [h("button", { class: "btn btn-ghost", onclick: closeModal }, "Cancel"), imp]);
 }
 
 /* ---------- boot ---------- */

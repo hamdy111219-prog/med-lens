@@ -71,7 +71,7 @@ function freshStore() {
       for (const l of s.lessons) {
         lessons.push({ id: uid(), section_id: sid, title: l.title, slug: l.slug,
           lenses: (l.lenses || []).slice(), state: l.state, order_index: l.order_index,
-          published: false, content: null });
+          published: false, high_yield: false, must_cover: [], content: null });
       }
     }
   }
@@ -192,6 +192,28 @@ export async function deleteSection(id) {
   if (error) throw error;
 }
 
+// Bulk-create a whole syllabus from a parsed checklist.
+// sections: [{ numeral, title, lens, lessons:[{ title, high_yield, must_cover:[] }] }]
+export async function importSyllabus(chapterId, sections) {
+  let secCount = 0, lesCount = 0;
+  for (const s of sections) {
+    const sec = await createSection(chapterId, { numeral: s.numeral || "", title: s.title });
+    secCount++;
+    for (const l of (s.lessons || [])) {
+      const slug = await uniqueLessonSlug(l.title);
+      await createLesson(sec.id, {
+        title: l.title, slug,
+        lenses: s.lens ? [s.lens] : [],
+        high_yield: !!l.high_yield,
+        must_cover: l.must_cover || [],
+        state: "new",
+      });
+      lesCount++;
+    }
+  }
+  return { sections: secCount, lessons: lesCount };
+}
+
 // =============================================================
 //  LESSONS
 // =============================================================
@@ -202,10 +224,11 @@ export async function listLessons(sectionId) {
 }
 export async function createLesson(sectionId, p) {
   const row = { section_id: sectionId, title: p.title?.trim() || "Untitled lesson",
-    slug: p.slug || "", lenses: p.lenses || [], state: p.state || "new" };
+    slug: p.slug || "", lenses: p.lenses || [], state: p.state || "new",
+    high_yield: !!p.high_yield, must_cover: p.must_cover || [] };
   if (MODE === "demo") {
     const sibs = store.lessons.filter(l => l.section_id === sectionId);
-    const r = { id: uid(), order_index: nextOrder(sibs), content: null, ...row };
+    const r = { id: uid(), order_index: nextOrder(sibs), published: false, content: null, ...row };
     store.lessons.push(r); saveStore(); return r;
   }
   const sibs = await listLessons(sectionId); row.order_index = nextOrder(sibs);
@@ -298,10 +321,10 @@ export async function getLessonBySlug(slug) {
 
 // Generate a lesson's content. Live = Supabase Edge Function (real Claude API);
 // demo = a local sample so the whole flow is previewable with no backend.
-export async function generateLesson(lessonId, name, currentLenses) {
+export async function generateLesson(lessonId, name, currentLenses, mustCover) {
   if (MODE === "demo") {
     await new Promise(r => setTimeout(r, 900));   // mimic latency
-    const content = sampleContent(name, currentLenses);
+    const content = sampleContent(name, currentLenses, mustCover);
     const slug = await uniqueLessonSlug(name, lessonId);
     const patch = { content, slug };
     if (Array.isArray(content.lenses) && content.lenses.length && (!currentLenses || !currentLenses.length))
@@ -326,9 +349,10 @@ export async function generateLesson(lessonId, name, currentLenses) {
 }
 
 // --- demo-only sample content (mirrors the Edge Function's JSON shape) ---
-function sampleContent(name, lenses) {
+function sampleContent(name, lenses, mustCover) {
   const L = (lenses && lenses.length) ? lenses : ["physio", "patho", "patho", "pharm"];
   const pick = i => L[Math.min(i, L.length - 1)] || "physio";
+  const points = (mustCover && mustCover.length) ? mustCover : null;
   return {
     sample: true,
     subtitle: `A ground-up walk through ${name} for USMLE Step 1 — built from mechanism to bedside.`,
@@ -337,7 +361,7 @@ function sampleContent(name, lenses) {
     glance: [
       `${name} is best understood by starting from normal structure and function, then asking what breaks.`,
       "Every clinical finding below traces back to a single underlying mechanism.",
-      "The exam rewards reasoning from mechanism, not memorized lists.",
+      points ? `This lesson is scoped to ${points.length} must-cover points from your checklist.` : "The exam rewards reasoning from mechanism, not memorized lists.",
     ],
     sections: [
       {
@@ -381,7 +405,7 @@ function sampleContent(name, lenses) {
         ],
       },
     ],
-    highYield: [
+    highYield: points ? points.slice() : [
       `Start every ${name} question from the normal baseline, then perturb one variable.`,
       "Distinguish the direct effect of the lesion from its compensatory response — exams test the difference.",
       "Each clinical finding maps to a specific step in the mechanism; learn the chain, not the list.",
