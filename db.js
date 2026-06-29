@@ -299,23 +299,30 @@ export async function getLessonBySlug(slug) {
 // Generate a lesson's content. Live = Supabase Edge Function (real Claude API);
 // demo = a local sample so the whole flow is previewable with no backend.
 export async function generateLesson(lessonId, name, currentLenses) {
-  let content;
   if (MODE === "demo") {
     await new Promise(r => setTimeout(r, 900));   // mimic latency
-    content = sampleContent(name, currentLenses);
-  } else {
-    const { data, error } = await supabase.functions.invoke("generate-lesson", { body: { name } });
-    if (error) throw new Error(error.message || "Generation request failed");
-    if (!data || data.error) throw new Error((data && data.error) || "Generation failed");
-    content = data.content;
+    const content = sampleContent(name, currentLenses);
+    const slug = await uniqueLessonSlug(name, lessonId);
+    const patch = { content, slug };
+    if (Array.isArray(content.lenses) && content.lenses.length && (!currentLenses || !currentLenses.length))
+      patch.lenses = content.lenses.filter(k => LENS_KEYS.includes(k));
+    await updateLesson(lessonId, patch);
+    return { content, slug };
   }
-  const slug = await uniqueLessonSlug(name, lessonId);
-  const patch = { content, slug };
-  if (Array.isArray(content.lenses) && content.lenses.length && (!currentLenses || !currentLenses.length)) {
-    patch.lenses = content.lenses.filter(k => LENS_KEYS.includes(k));
+  // live: the Edge Function writes the lesson in the background and saves it;
+  // we kick it off, then poll the row until the new content lands.
+  const before = await supabase.from("lessons").select("updated_at").eq("id", lessonId).single();
+  const prevUpdated = before.data ? before.data.updated_at : null;
+  const { data, error } = await supabase.functions.invoke("generate-lesson", { body: { name, lessonId } });
+  if (error) throw new Error(error.message || "Generation request failed");
+  if (data && data.error) throw new Error(data.error);
+  const start = Date.now();
+  while (Date.now() - start < 130000) {
+    await new Promise(r => setTimeout(r, 3500));
+    const { data: row } = await supabase.from("lessons").select("updated_at, content, slug").eq("id", lessonId).single();
+    if (row && row.content && row.updated_at !== prevUpdated) return { content: row.content, slug: row.slug };
   }
-  await updateLesson(lessonId, patch);
-  return { content, slug };
+  throw new Error("Still generating — give it a moment, then refresh the page to see it.");
 }
 
 // --- demo-only sample content (mirrors the Edge Function's JSON shape) ---
@@ -353,11 +360,6 @@ function sampleContent(name, lenses) {
         lens: pick(2), title: "How patients present",
         blocks: [
           { type: "prose", text: "Presentation is just mechanism made visible. Each symptom and sign maps back to a step in the cascade above, which is why a single vignette can list several findings that all share one cause." },
-          { type: "image", query: "heart anatomy diagram", shows: "a labeled anatomical reference for orientation",
-            caption: "A real, attributed image is fetched automatically when a lesson calls for one.",
-            url: "https://commons.wikimedia.org/wiki/Special:FilePath/Diagram%20of%20the%20human%20heart%20(cropped).svg",
-            credit: "Wapcaplet / ZooFari · CC BY-SA 3.0", source: "Wikimedia Commons",
-            pageUrl: "https://commons.wikimedia.org/wiki/File:Diagram_of_the_human_heart_(cropped).svg" },
           { type: "compare", columns: ["Early", "Late"], rows: [
             ["Dominant driver", "Compensation intact", "Compensation exhausted"],
             ["Typical finding", "Subtle / exertional", "Overt / at rest"],
