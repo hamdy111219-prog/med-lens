@@ -270,11 +270,16 @@ function renderList(items, ordered){
   const list = h(ordered ? "ol" : "ul",{class:"tidy"});
   (items||[]).forEach(it=>{
     if (it && typeof it === "object" && !Array.isArray(it)){
+      const hasText = (it.text||"").trim().length > 0;
+      const sub = (Array.isArray(it.items) && it.items.length) ? renderList(it.items, ordered) : null;
+      if (!hasText){ if (sub) [...sub.children].forEach(li => list.append(li)); return; } // no text: promote sub-items, drop empty dot
       const li = h("li",{html: md(it.text||"")});
-      if (Array.isArray(it.items) && it.items.length) li.append(renderList(it.items, ordered));
+      if (sub) li.append(sub);
       list.append(li);
     } else {
-      list.append(h("li",{html: md(String(it))}));
+      const t = String(it);
+      if (!t.trim()) return;            // skip empty strings
+      list.append(h("li",{html: md(t)}));
     }
   });
   return list;
