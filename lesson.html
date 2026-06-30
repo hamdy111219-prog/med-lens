@@ -139,22 +139,8 @@ function render(lesson, preview){
       h("ul",{}, ...c.glance.map(t=>h("li",{html:md(t)})))));
   }
 
-  (c.sections||[]).forEach((s,i)=>{
-    const id="p"+(i+1); const lens = LENS_KEY(s.lens);
-    tocOl.append(h("li",{}, h("a",{href:"#"+id}, (i+1)+" · "+(s.title||"Part "+(i+1)))));
-    const block = h("div",{class:"lens "+lens,"data-lens":lens},
-      h("span",{class:"lens-label"}, h("i",{class:"pin"}), LABEL[lens]||lens),
-      h("h4",{}, s.title||""));
-    const _nt = x => (x||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
-    (s.blocks||[]).filter(b => !(b && b.type==="heading" && _nt(b.text)===_nt(s.title)))
-      .forEach(b => block.append(renderBlock(b)));
-    main.append(h("article",{class:"topic",id,"data-lens":lens},
-      h("header",{class:"topic-head"},
-        h("span",{class:"topic-kicker"}, "Part "+(i+1)),
-        h("h2",{}, s.title||""),
-        h("div",{class:"lensmap"}, h("span",{style:`--c:var(--${lens})`}, LABEL[lens]||lens))),
-      block));
-  });
+  const sectionsHost = h("div",{class:"sections-host"});
+  main.append(sectionsHost);
 
   if (Array.isArray(c.highYield) && c.highYield.length){
     main.append(h("div",{class:"hybox"},
@@ -173,21 +159,66 @@ function render(lesson, preview){
       h("span",{html:'<svg viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'})),
     h("div",{class:"toc-inner"}, h("div",{class:"toc-h"},"In this lesson"), tocOl));
 
-  app.append(h("div",{class:"wrap"}, h("div",{class:"chapbody"}, toc, main)));
+  const bodyWrap = h("div",{class:"wrap"}, h("div",{class:"chapbody"}, toc, main));
+  app.append(bodyWrap);
   app.append(h("footer",{class:"foot"}, h("div",{class:"wrap foot-in"},
     h("div",{}, h("a",{class:"brand",href:"index.html"}, h("span",{class:"brand-mark",html:'<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="2"/><path d="M12 6.5V12l3.6 2.2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>'}),"Med",h("b",{},"Lens")),
       h("p",{class:"disclaim"}, (c.sample?"Sample content generated in demo mode · ":"")+"For study only — not medical advice.")),
     lesson.chapter ? h("a",{class:"btn btn-ghost",href:"chapter.html?slug="+encodeURIComponent(lesson.chapter.slug)},"← All "+lesson.chapter.title.toLowerCase()+" lessons") : null)));
 
   document.title = lesson.title + " — MedLens";
+
+  // ---------- Learn / Memorize ----------
+  const memSections = (lesson.bullets && Array.isArray(lesson.bullets.sections) && lesson.bullets.sections.length) ? lesson.bullets.sections : null;
+
+  function renderSections(secs){
+    sectionsHost.innerHTML = ""; tocOl.innerHTML = "";
+    const _nt = x => (x||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+    (secs||[]).forEach((s,i)=>{
+      const id="p"+(i+1); const lens = LENS_KEY(s.lens);
+      const a = h("a",{href:"#"+id}, (i+1)+" · "+(s.title||"Part "+(i+1)));
+      a.addEventListener("click",()=>{ const t=document.querySelector(".toc"); if(t && matchMedia("(max-width:999px)").matches) t.setAttribute("data-open","false"); });
+      tocOl.append(h("li",{}, a));
+      const body = h("div",{class:"lens "+lens,"data-lens":lens},
+        h("span",{class:"lens-label"}, h("i",{class:"pin"}), LABEL[lens]||lens),
+        h("h4",{}, s.title||""));
+      (s.blocks||[]).filter(b => !(b && b.type==="heading" && _nt(b.text)===_nt(s.title)))
+        .forEach(b => body.append(renderBlock(b)));
+      sectionsHost.append(h("article",{class:"topic",id,"data-lens":lens},
+        h("header",{class:"topic-head"},
+          h("span",{class:"topic-kicker"}, "Part "+(i+1)),
+          h("h2",{}, s.title||""),
+          h("div",{class:"lensmap"}, h("span",{style:`--c:var(--${lens})`}, LABEL[lens]||lens))),
+        body));
+    });
+    document.querySelectorAll(".chip[data-filter]").forEach(ch => ch.setAttribute("aria-pressed", ch.getAttribute("data-filter")==="all"?"true":"false"));
+  }
+  function paint(mode){
+    if (mode==="memorize" && !memSections) mode="learn";
+    renderSections(mode==="memorize" ? memSections : (c.sections||[]));
+    document.querySelectorAll(".stbtn").forEach(b => b.classList.toggle("active", b.getAttribute("data-mode")===mode));
+    document.body.setAttribute("data-studymode", mode);
+    try { localStorage.setItem("medlens-study-mode", mode); } catch(_e){}
+  }
+
+  if (memSections){
+    const mk = (mode,label) => { const b=h("button",{class:"stbtn","data-mode":mode}, label); b.addEventListener("click",()=>paint(mode)); return b; };
+    const bar = h("div",{class:"studybar"}, h("div",{class:"wrap"},
+      h("div",{class:"studytoggle",role:"tablist","aria-label":"Study mode"}, mk("learn","Learn"), mk("memorize","Memorize")),
+      h("span",{class:"studyhint"}, "Switch between the full lesson and a memorization outline.")));
+    app.insertBefore(bar, bodyWrap);
+  }
+
   bindFilter(); bindToc();
+  let saved=null; try { saved=localStorage.getItem("medlens-study-mode"); } catch(_e){}
+  paint(saved==="memorize" && memSections ? "memorize" : "learn");
 }
 
 function renderBlock(b){
   if (!b || !b.type) return null;
   if (b.type === "prose")   return h("p",{html:md(b.text||"")});
   if (b.type === "heading") return h("h4",{style:{marginTop:"18px"}}, b.text||"");
-  if (b.type === "list")    return h(b.ordered ? "ol" : "ul",{class:"tidy"}, ...(b.items||[]).map(t=>h("li",{html:md(t)})));
+  if (b.type === "list")    return renderList(b.items, b.ordered);
   if (b.type === "callout"){
     const [cls,deflabel,icon] = CALL[b.variant] || CALL.clinical;
     return h("div",{class:"call "+cls},
@@ -235,6 +266,19 @@ function renderBlock(b){
   return null;
 }
 
+function renderList(items, ordered){
+  const list = h(ordered ? "ol" : "ul",{class:"tidy"});
+  (items||[]).forEach(it=>{
+    if (it && typeof it === "object" && !Array.isArray(it)){
+      const li = h("li",{html: md(it.text||"")});
+      if (Array.isArray(it.items) && it.items.length) li.append(renderList(it.items, ordered));
+      list.append(li);
+    } else {
+      list.append(h("li",{html: md(String(it))}));
+    }
+  });
+  return list;
+}
 function LENS_KEY(k){ return (LABEL[k] ? k : "physio"); }
 function stat(n,l){ return h("div",{class:"stat"}, h("div",{class:"n"},String(n)), h("div",{class:"l"},l)); }
 function chip(key,label,on){
@@ -244,18 +288,16 @@ function chip(key,label,on){
 }
 function bindFilter(){
   const chips=[...document.querySelectorAll(".chip[data-filter]")];
-  const topics=[...document.querySelectorAll(".topic[data-lens]")];
   chips.forEach(chip=>chip.addEventListener("click",()=>{
     const f=chip.getAttribute("data-filter");
     chips.forEach(c=>c.setAttribute("aria-pressed", c===chip?"true":"false"));
-    topics.forEach(t=>t.classList.toggle("dim", !(f==="all"||t.getAttribute("data-lens")===f)));
+    document.querySelectorAll(".topic[data-lens]").forEach(t=>t.classList.toggle("dim", !(f==="all"||t.getAttribute("data-lens")===f)));
   }));
 }
 function bindToc(){
   const t=document.querySelector(".toc"); if(!t) return;
   const btn=t.querySelector(".toc-mobile-toggle");
   btn && btn.addEventListener("click",()=>{ const o=t.getAttribute("data-open")==="true"; t.setAttribute("data-open",String(!o)); btn.setAttribute("aria-expanded",String(!o)); });
-  t.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{ if(matchMedia("(max-width:999px)").matches) t.setAttribute("data-open","false"); }));
 }
 </script>
 </body>

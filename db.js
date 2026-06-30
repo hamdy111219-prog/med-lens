@@ -71,7 +71,7 @@ function freshStore() {
       for (const l of s.lessons) {
         lessons.push({ id: uid(), section_id: sid, title: l.title, slug: l.slug,
           lenses: (l.lenses || []).slice(), state: l.state, order_index: l.order_index,
-          published: false, high_yield: false, must_cover: [], content: null });
+          published: false, high_yield: false, must_cover: [], content: null, bullets: null });
       }
     }
   }
@@ -228,7 +228,7 @@ export async function createLesson(sectionId, p) {
     high_yield: !!p.high_yield, must_cover: p.must_cover || [] };
   if (MODE === "demo") {
     const sibs = store.lessons.filter(l => l.section_id === sectionId);
-    const r = { id: uid(), order_index: nextOrder(sibs), published: false, content: null, ...row };
+    const r = { id: uid(), order_index: nextOrder(sibs), published: false, content: null, bullets: null, ...row };
     store.lessons.push(r); saveStore(); return r;
   }
   const sibs = await listLessons(sectionId); row.order_index = nextOrder(sibs);
@@ -380,6 +380,51 @@ export async function generateLesson(lessonId, name, currentLenses, mustCover) {
     if (row && row.content && row.updated_at !== prevUpdated) return { content: row.content, slug: row.slug };
   }
   throw new Error("Still generating — give it a moment, then refresh the page to see it.");
+}
+
+// Build the memorization "bullets" version from the already-generated lesson.
+export async function makeBullets(lessonId) {
+  if (MODE === "demo") {
+    await new Promise(r => setTimeout(r, 700));
+    const l = store.lessons.find(x => x.id === lessonId);
+    if (!l || !l.content) throw new Error("Generate the lesson first.");
+    const bullets = sampleBullets(l.content);
+    await updateLesson(lessonId, { bullets });
+    return bullets;
+  }
+  const before = await supabase.from("lessons").select("updated_at").eq("id", lessonId).single();
+  const prevUpdated = before.data ? before.data.updated_at : null;
+  const { data, error } = await supabase.functions.invoke("generate-lesson", { body: { lessonId, mode: "bullets" } });
+  if (error) throw new Error(error.message || "Bullets request failed");
+  if (data && data.error) throw new Error(data.error);
+  const start = Date.now();
+  while (Date.now() - start < 130000) {
+    await new Promise(r => setTimeout(r, 3000));
+    const { data: row } = await supabase.from("lessons").select("updated_at, bullets").eq("id", lessonId).single();
+    if (row && row.bullets && row.updated_at !== prevUpdated) return row.bullets;
+  }
+  throw new Error("Still working — give it a moment, then refresh.");
+}
+
+// Demo-only: turn prose content into a nested-bullet outline for preview.
+function sampleBullets(content) {
+  const sections = (content.sections || []).map(s => {
+    const items = [];
+    (s.blocks || []).forEach(b => {
+      if (b.type === "prose" || b.type === "anchor") {
+        const parts = (b.text || "").replace(/\*\*/g, "").split(/(?<=[.!?])\s+/).map(x => x.trim()).filter(Boolean);
+        if (parts.length) items.push({ text: parts[0], items: parts.slice(1, 4) });
+      } else if (b.type === "list") {
+        (b.items || []).forEach(it => items.push(typeof it === "string" ? it : it));
+      } else if (b.type === "callout") {
+        items.push({ text: "**" + (b.title || "Note") + ":** " + (b.text || ""), items: [] });
+      } else if (b.type === "flow") {
+        items.push({ text: "Sequence", items: (b.steps || []).map(x => x) });
+      }
+    });
+    return { lens: s.lens, title: s.title, blocks: [{ type: "list", ordered: false, items }] };
+  });
+  return { sections };
 }
 
 // --- demo-only sample content (mirrors the Edge Function's JSON shape) ---

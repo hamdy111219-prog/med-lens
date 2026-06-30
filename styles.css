@@ -793,3 +793,19 @@ mark.hot {
   text-decoration: none; border-bottom: 1px dotted var(--ink-faint);
 }
 .imgfig figcaption .credit:hover { color: var(--brand); border-bottom-color: var(--brand); }
+
+/* ---------- Learn / Memorize toggle ---------- */
+.studybar { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: saturate(1.4) blur(8px); border-bottom: 1px solid var(--line); }
+.studybar .wrap { display: flex; align-items: center; gap: 14px; padding: 10px 0; }
+.studytoggle { display: inline-flex; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; }
+.studytoggle .stbtn { appearance: none; border: 0; background: transparent; color: var(--ink-soft); font: inherit; font-weight: 600; font-size: .86rem; padding: 7px 18px; border-radius: 999px; cursor: pointer; transition: background .15s, color .15s; }
+.studytoggle .stbtn:hover { color: var(--ink); }
+.studytoggle .stbtn.active { background: var(--brand); color: #fff; box-shadow: var(--shadow-sm); }
+.studyhint { font-size: .8rem; color: var(--ink-faint); }
+@media (max-width: 720px){ .studyhint { display: none; } }
+body[data-studymode="memorize"] .glance { display: none; }
+/* nested bullets in memorize mode */
+.lens ul.tidy ul.tidy, .lens ol.tidy ol.tidy, .lens ul.tidy ol.tidy, .lens ol.tidy ul.tidy { margin: 5px 0 5px 0; }
+.lens ul.tidy li > ul.tidy li, .lens ul.tidy li > ol.tidy li { font-size: .95em; color: var(--ink-soft); }
+body[data-studymode="memorize"] .lens.lens { padding-top: 14px; padding-bottom: 14px; }
+body[data-studymode="memorize"] .topic-head h2 { margin-bottom: 4px; }
