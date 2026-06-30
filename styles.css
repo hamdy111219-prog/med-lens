@@ -809,3 +809,12 @@ body[data-studymode="memorize"] .glance { display: none; }
 .lens ul.tidy li > ul.tidy li, .lens ul.tidy li > ol.tidy li { font-size: .95em; color: var(--ink-soft); }
 body[data-studymode="memorize"] .lens.lens { padding-top: 14px; padding-bottom: 14px; }
 body[data-studymode="memorize"] .topic-head h2 { margin-bottom: 4px; }
+
+/* nested bullets: drop to their own indented line, never beside the parent */
+.lens ul.tidy li, .lens ol.tidy li { flex-wrap: wrap; align-content: flex-start; }
+.lens ul.tidy li > ul.tidy, .lens ul.tidy li > ol.tidy,
+.lens ol.tidy li > ul.tidy, .lens ol.tidy li > ol.tidy {
+  flex: 0 0 100%; width: 100%; margin: 7px 0 0; padding-left: 17px; gap: 7px;
+}
+.lens ul.tidy li > ul.tidy li, .lens ol.tidy li > ul.tidy li,
+.lens ul.tidy li > ol.tidy li, .lens ol.tidy li > ol.tidy li { font-size: .96em; }
