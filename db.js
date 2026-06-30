@@ -417,7 +417,7 @@ function sampleBullets(content) {
       } else if (b.type === "list") {
         (b.items || []).forEach(it => items.push(typeof it === "string" ? it : it));
       } else if (b.type === "callout") {
-        items.push({ text: "**" + (b.title || "Note") + ":** " + (b.text || ""), items: [] });
+        items.push(`[${b.variant || "clinical"}] ${(b.title || "Note")}: ${(b.text || "")}`);
       } else if (b.type === "flow") {
         items.push({ text: "Sequence", items: (b.steps || []).map(x => x) });
       }

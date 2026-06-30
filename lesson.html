@@ -195,7 +195,7 @@ function render(lesson, preview){
   }
   function paint(mode){
     if (mode==="memorize" && !memSections) mode="learn";
-    renderSections(mode==="memorize" ? memSections : (c.sections||[]));
+    renderSections(mode==="memorize" ? normalizeMemSections(memSections) : (c.sections||[]));
     document.querySelectorAll(".stbtn").forEach(b => b.classList.toggle("active", b.getAttribute("data-mode")===mode));
     document.body.setAttribute("data-studymode", mode);
     try { localStorage.setItem("medlens-study-mode", mode); } catch(_e){}
@@ -278,6 +278,38 @@ function renderList(items, ordered){
     }
   });
   return list;
+}
+// In the Memorize outline, callouts arrive flattened as "[variant] Title: text" bullets.
+// Turn those back into real callout boxes so mnemonics/pitfalls/etc render styled.
+function normalizeMemSections(sections){
+  const VARS = { clinical:1, pitfall:1, mnemonic:1, exam:1 };
+  const reTag = /^\s*\[(\w+)\]\s*(.*)$/;
+  const txt = it => (it && typeof it === "object" && !Array.isArray(it)) ? (it.text||"") : String(it);
+  return (sections||[]).map(s=>{
+    const out = []; let cur = null;
+    const flush = () => { if (cur && cur.length) out.push({type:"list", ordered:false, items:cur}); cur = null; };
+    (s.blocks||[]).forEach(b=>{
+      if (b.type === "list"){
+        (b.items||[]).forEach(it=>{
+          const m = txt(it).match(reTag);
+          if (m && VARS[m[1].toLowerCase()]){
+            flush();
+            const variant = m[1].toLowerCase();
+            let rest = (m[2]||"").trim();
+            let extra = "";
+            if (it && typeof it === "object" && Array.isArray(it.items) && it.items.length)
+              extra = " " + it.items.map(x => (x && typeof x === "object") ? (x.text||"") : String(x)).join("; ");
+            let title = "", text = (rest + extra).trim();
+            const ci = rest.indexOf(":");
+            if (ci > 0 && ci < 42){ title = rest.slice(0, ci).trim(); text = (rest.slice(ci+1) + extra).trim(); }
+            out.push({ type:"callout", variant, title, text });
+          } else { (cur = cur || []).push(it); }
+        });
+        flush();
+      } else out.push(b);
+    });
+    return { lens:s.lens, title:s.title, blocks: out.length ? out : (s.blocks||[]) };
+  });
 }
 function LENS_KEY(k){ return (LABEL[k] ? k : "physio"); }
 function stat(n,l){ return h("div",{class:"stat"}, h("div",{class:"n"},String(n)), h("div",{class:"l"},l)); }
