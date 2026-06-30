@@ -240,10 +240,44 @@ export async function updateLesson(id, p) {
   const { data, error } = await supabase.from("lessons").update(p).eq("id", id).select().single();
   if (error) throw error; return data;
 }
+// Persist a new display order. kind: "sections" | "lessons"; ids in the new order.
+export async function reorderRows(kind, ids) {
+  if (kind !== "sections" && kind !== "lessons") throw new Error("bad kind");
+  if (MODE === "demo") {
+    const arr = kind === "sections" ? store.sections : store.lessons;
+    ids.forEach((id, i) => { const r = arr.find(x => x.id === id); if (r) r.order_index = i; });
+    saveStore(); return;
+  }
+  const results = await Promise.all(ids.map((id, i) => supabase.from(kind).update({ order_index: i }).eq("id", id)));
+  const err = results.find(r => r.error);
+  if (err && err.error) throw err.error;
+}
+
 export async function deleteLesson(id) {
   if (MODE === "demo") { store.lessons = store.lessons.filter(l => l.id !== id); saveStore(); return; }
   const { error } = await supabase.from("lessons").delete().eq("id", id);
   if (error) throw error;
+}
+
+// Upload an image and return a usable URL.
+// Demo: inline data URL (kept in localStorage). Live: Supabase Storage bucket "lesson-images".
+export async function uploadImage(file) {
+  if (!file) throw new Error("No file");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Image is larger than 5 MB");
+  if (MODE === "demo") {
+    return await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = () => rej(new Error("Could not read file"));
+      r.readAsDataURL(file);
+    });
+  }
+  const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+  const path = `lessons/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabase.storage.from("lesson-images").upload(path, file, { contentType: file.type || "image/" + ext, upsert: false });
+  if (error) throw new Error(error.message || "Upload failed (is the 'lesson-images' bucket set up?)");
+  const { data } = supabase.storage.from("lesson-images").getPublicUrl(path);
+  return data.publicUrl;
 }
 
 // ---------- counts for the chapters list ----------
@@ -405,12 +439,11 @@ function sampleContent(name, lenses, mustCover) {
         ],
       },
     ],
-    highYield: points ? points.slice() : [
-      `Start every ${name} question from the normal baseline, then perturb one variable.`,
-      "Distinguish the direct effect of the lesion from its compensatory response — exams test the difference.",
-      "Each clinical finding maps to a specific step in the mechanism; learn the chain, not the list.",
-      "Match treatments to the step of the cascade they interrupt.",
-      "Second-order questions ask the mechanism of the answer you just chose — be ready to justify it.",
+    highYield: [
+      `The most testable points of ${name}, summarized — in the live site this box is written by the model from the finished lesson.`,
+      "Reason from mechanism: each finding traces back to one underlying cause.",
+      "Distinguish the direct effect of a lesion from its compensatory response.",
+      "Match treatments to the step of the mechanism they interrupt.",
     ],
   };
 }

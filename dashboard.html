@@ -89,6 +89,11 @@ const ICON = {
   spark: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.8 5L19 9.8 13.8 12 12 17l-1.8-5L5 9.8 10.2 8 12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
   eye: '<svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.7"/></svg>',
   globe: '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18" stroke="currentColor" stroke-width="1.5"/></svg>',
+  layers: '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 13l9 5 9-5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  up: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 14l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none"><path d="M6 10l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  image: '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><circle cx="8.5" cy="10" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 17l4.5-4 3 2.5L16 12l3 3" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  grip: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>',
 };
 
 function toast(msg) {
@@ -97,6 +102,23 @@ function toast(msg) {
 }
 function slugify(s) {
   return (s || "").toLowerCase().replace(/&[a-z]+;/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
+/* ---------- drag + arrow reordering ---------- */
+let _dragSrc = null;
+function moveInArray(arr, from, to) { if (from < 0 || to < 0 || from >= arr.length || to >= arr.length) return; const x = arr.splice(from, 1)[0]; arr.splice(to, 0, x); }
+async function persistOrder(kind, ids) { try { await DB.reorderRows(kind, ids); } catch (e) { toast("Couldn't save order"); } render(); }
+function arrowMove(kind, ids, id, dir) { const i = ids.indexOf(id), j = i + dir; if (j < 0 || j >= ids.length) return; moveInArray(ids, i, j); persistOrder(kind, ids); }
+function dndRow(row, id, ids, kind) {
+  const handle = row.querySelector(".drag");
+  if (handle) {
+    handle.setAttribute("draggable", "true");
+    handle.addEventListener("dragstart", e => { _dragSrc = id; e.dataTransfer.effectAllowed = "move"; try { e.dataTransfer.setData("text/plain", String(id)); } catch (_e) {} row.classList.add("dragging"); });
+    handle.addEventListener("dragend", () => { _dragSrc = null; row.classList.remove("dragging"); document.querySelectorAll(".drow.dragover").forEach(r => r.classList.remove("dragover")); });
+  }
+  row.addEventListener("dragover", e => { if (_dragSrc == null || _dragSrc === id) return; e.preventDefault(); e.dataTransfer.dropEffect = "move"; row.classList.add("dragover"); });
+  row.addEventListener("dragleave", () => row.classList.remove("dragover"));
+  row.addEventListener("drop", e => { e.preventDefault(); row.classList.remove("dragover"); if (_dragSrc == null || _dragSrc === id) return; const from = ids.indexOf(_dragSrc), to = ids.indexOf(id); moveInArray(ids, from, to); persistOrder(kind, ids); });
 }
 
 /* ---------- modal + form ---------- */
@@ -197,6 +219,7 @@ async function render() {
     if (state.view === "chapters") return await viewChapters();
     if (state.view === "chapter") return await viewChapter();
     if (state.view === "section") return await viewSection();
+    if (state.view === "editor") return viewLessonEditor();
   } catch (ex) {
     view.innerHTML = "";
     view.append(h("div", { class: "empty" }, h("p", {}, "Couldn’t load data: " + (ex?.message || ex))));
@@ -260,17 +283,23 @@ async function viewChapter() {
   }
   const counts = await DB.counts();
   const panel = h("div", { class: "panel" });
+  const secIds = sections.map(s => s.id);
   sections.forEach(s => {
     const n = counts.perSection[s.id] || 0;
-    panel.append(h("div", { class: "drow", style: "--accent:var(--physio)" },
+    const row = h("div", { class: "drow", style: "--accent:var(--physio)" },
+      h("span", { class: "drag", title: "Drag to reorder", html: ICON.grip }),
       h("span", { class: "num" }, s.numeral || "–"),
       h("div", { class: "grow" },
         h("div", { class: "t", onclick: () => go("section", { sectionId: s.id }) }, s.title),
         h("div", { class: "m" }, h("span", {}, n + " lesson" + (n === 1 ? "" : "s")))),
       h("div", { class: "actions" },
+        h("button", { class: "ibtn", title: "Move up", onclick: () => arrowMove("sections", secIds, s.id, -1), html: ICON.up }),
+        h("button", { class: "ibtn", title: "Move down", onclick: () => arrowMove("sections", secIds, s.id, 1), html: ICON.down }),
         h("a", { class: "manage", onclick: () => go("section", { sectionId: s.id }) }, "Lessons", h("span", { html: ICON.chevron })),
         h("button", { class: "ibtn", title: "Edit", onclick: () => editSection(s), html: ICON.edit }),
-        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeSection(s), html: ICON.trash }))));
+        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeSection(s), html: ICON.trash })));
+    dndRow(row, s.id, secIds, "sections");
+    panel.append(row);
   });
   view.append(panel);
 }
@@ -295,6 +324,7 @@ async function viewSection() {
     return;
   }
   const panel = h("div", { class: "panel" });
+  const lesIds = lessons.map(l => l.id);
   lessons.forEach(l => {
     const hasContent = !!l.content;
     const genBtn = h("button", { class: "btn btn-ghost sm gen" },
@@ -302,7 +332,8 @@ async function viewSection() {
       hasContent ? "Regenerate" : "Generate");
     genBtn.addEventListener("click", () => generateFor(l, genBtn));
 
-    panel.append(h("div", { class: "drow" },
+    const row = h("div", { class: "drow" },
+      h("span", { class: "drag", title: "Drag to reorder", html: ICON.grip }),
       h("span", { class: "ticks" }, ...(l.lenses.length ? l.lenses : ["physio"]).map(k =>
         h("i", { style: `background:var(--${k})` }))),
       h("div", { class: "grow" },
@@ -314,11 +345,16 @@ async function viewSection() {
           hasContent ? h("span", { class: "pill done", style: { fontSize: ".55rem" } }, l.published ? "Live" : "Generated · hidden") : null)),
       h("span", { class: "pill " + l.state }, stateLabel(l.state)),
       h("div", { class: "actions" },
+        h("button", { class: "ibtn", title: "Move up", onclick: () => arrowMove("lessons", lesIds, l.id, -1), html: ICON.up }),
+        h("button", { class: "ibtn", title: "Move down", onclick: () => arrowMove("lessons", lesIds, l.id, 1), html: ICON.down }),
         genBtn,
         hasContent ? h("a", { class: "ibtn", title: "View lesson", target: "_blank", rel: "noopener", href: "lesson.html?slug=" + encodeURIComponent(l.slug), html: ICON.eye }) : null,
+        hasContent ? h("button", { class: "ibtn", title: "Edit content", onclick: () => openLessonEditor(l), html: ICON.layers }) : null,
         hasContent ? h("button", { class: "ibtn" + (l.published ? " on" : ""), title: l.published ? "Unpublish" : "Publish", onclick: () => togglePublishLesson(l), html: ICON.globe }) : null,
         h("button", { class: "ibtn", title: "Edit", onclick: () => editLesson(l), html: ICON.edit }),
-        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeLesson(l), html: ICON.trash }))));
+        h("button", { class: "ibtn danger", title: "Delete", onclick: () => removeLesson(l), html: ICON.trash })));
+    dndRow(row, l.id, lesIds, "lessons");
+    panel.append(row);
   });
   view.append(panel);
 }
@@ -420,6 +456,208 @@ function editLesson(l) {
 }
 function removeLesson(l) {
   confirmModal("Delete lesson?", `“${l.title}” will be permanently removed.`, async () => { await DB.deleteLesson(l.id); toast("Lesson deleted"); render(); });
+}
+
+/* ---------- lesson content editor (full block editor) ---------- */
+let draft = null, edBodyRef = null;
+const LENS_OPTS = DISCIPLINES.map(d => d.key);
+const BLOCK_TYPES = [
+  ["prose", "Paragraph"], ["heading", "Heading"], ["anchor", "Analogy"],
+  ["callout", "Callout"], ["list", "List"], ["flow", "Flow steps"],
+  ["figure", "Figure (SVG)"], ["compare", "Compare table"], ["image", "Image"],
+];
+const ed_lines = a => (a || []).join("\n");
+const ed_arr = s => (s || "").split("\n").map(x => x.replace(/\s+$/, "")).filter(x => x.trim().length);
+
+function normEditorContent(c) {
+  c = c ? JSON.parse(JSON.stringify(c)) : {};
+  return {
+    subtitle: c.subtitle || "", readingTime: c.readingTime || 5,
+    lenses: Array.isArray(c.lenses) ? c.lenses : [],
+    glance: Array.isArray(c.glance) ? c.glance.slice() : [],
+    highYield: Array.isArray(c.highYield) ? c.highYield.slice() : [],
+    sections: Array.isArray(c.sections) ? c.sections.map(s => ({
+      lens: LENS_OPTS.includes(s.lens) ? s.lens : "physio", title: s.title || "",
+      blocks: Array.isArray(s.blocks) ? s.blocks.map(b => ({ ...b })) : [],
+    })) : [],
+  };
+}
+function newBlock(type) {
+  switch (type) {
+    case "heading": return { type, text: "" };
+    case "anchor": return { type, text: "" };
+    case "callout": return { type, variant: "clinical", title: "", text: "" };
+    case "list": return { type, ordered: false, items: [] };
+    case "flow": return { type, steps: [], note: "" };
+    case "figure": return { type, svg: "", caption: "" };
+    case "compare": return { type, columns: ["", ""], rows: [] };
+    case "image": return { type, url: "", caption: "", alt: "", credit: "", source: "", pageUrl: "" };
+    default: return { type: "prose", text: "" };
+  }
+}
+function ed_sel(value, opts, onChange) {
+  const s = h("select", { class: "ed-in" }, ...opts.map(o => h("option", { value: Array.isArray(o) ? o[0] : o }, Array.isArray(o) ? o[1] : o)));
+  s.value = value; s.addEventListener("change", e => onChange(e.target.value)); return s;
+}
+function ed_text(value, on, ph) { const i = h("input", { class: "ed-in", type: "text", placeholder: ph || "" }); i.value = value || ""; i.addEventListener("input", e => on(e.target.value)); return i; }
+function ed_area(value, on, rows) { const t = h("textarea", { class: "ed-in", rows: rows || 3 }); t.value = value || ""; t.addEventListener("input", e => on(e.target.value)); return t; }
+
+function openLessonEditor(l) { draft = { lessonId: l.id, title: l.title, content: normEditorContent(l.content) }; go("editor"); }
+
+function viewLessonEditor() {
+  const view = $("#view"); view.innerHTML = "";
+  if (!draft) { go("section"); return; }
+  view.append(h("div", { class: "crumbs" },
+    h("a", { onclick: () => { draft = null; go("section"); } }, "← Back"),
+    h("span", {}, " / Editing content")));
+  view.append(h("div", { class: "ed-head" },
+    h("div", {}, h("h2", { style: { margin: 0 } }, draft.title), h("div", { class: "hint" }, "Edit text, reorder or change blocks, and insert images. Changes save when you click Save.")),
+    h("div", { class: "ed-headbtns" },
+      h("button", { class: "btn btn-ghost", onclick: () => { draft = null; go("section"); } }, "Cancel"),
+      h("button", { class: "btn btn-primary", onclick: saveEditor }, "Save content"))));
+  edBodyRef = h("div", { class: "ed-body" });
+  view.append(edBodyRef);
+  renderEdBody();
+}
+
+function renderEdBody() {
+  const c = draft.content, b = edBodyRef; b.innerHTML = "";
+  // meta
+  const meta = h("div", { class: "ed-card" }, h("div", { class: "ed-card-h" }, "Lesson overview"));
+  meta.append(ed_field("Subtitle", ed_text(c.subtitle, v => c.subtitle = v, "One-line framing")));
+  const rt = h("input", { class: "ed-in", type: "number", min: "1", style: { maxWidth: "90px" } }); rt.value = c.readingTime;
+  rt.addEventListener("input", e => c.readingTime = Number(e.target.value) || 1);
+  meta.append(ed_field("Reading time (min)", rt));
+  meta.append(ed_field("Header lenses", h("div", { class: "lenspick" }, ...DISCIPLINES.map(d => {
+    const on = c.lenses.includes(d.key);
+    const chip = h("button", { type: "button", "aria-pressed": on ? "true" : "false", style: `--c:var(--${d.key})` }, h("i"), d.label);
+    chip.addEventListener("click", () => {
+      const i = c.lenses.indexOf(d.key); const isOn = i >= 0;
+      if (isOn) c.lenses.splice(i, 1); else c.lenses.push(d.key);
+      chip.setAttribute("aria-pressed", isOn ? "false" : "true");
+    });
+    return chip;
+  }))));
+  meta.append(ed_field("At a glance (one per line)", ed_area(ed_lines(c.glance), v => c.glance = ed_arr(v), 3)));
+  meta.append(ed_field("High-yield box (one per line)", ed_area(ed_lines(c.highYield), v => c.highYield = ed_arr(v), 4)));
+  b.append(meta);
+
+  // sections
+  c.sections.forEach((sec, si) => b.append(sectionCard(sec, si)));
+  const addSec = h("button", { class: "btn btn-ghost", onclick: () => { c.sections.push({ lens: "physio", title: "New section", blocks: [] }); renderEdBody(); } },
+    h("span", { html: ICON.plus, style: { display: "inline-flex", width: "15px" } }), "Add section");
+  b.append(h("div", { style: { marginTop: "12px" } }, addSec));
+}
+
+function sectionCard(sec, si) {
+  const c = draft.content;
+  const card = h("div", { class: "ed-card ed-section" });
+  const head = h("div", { class: "ed-sec-head" },
+    h("span", { class: "ticks" }, h("i", { style: `background:var(--${sec.lens})` })),
+    ed_text(sec.title, v => sec.title = v, "Section title"),
+    ed_sel(sec.lens, LENS_OPTS.map(k => [k, lensLabel(k)]), v => { sec.lens = v; renderEdBody(); }),
+    h("button", { class: "ibtn", title: "Move up", onclick: () => { if (si > 0) { [c.sections[si - 1], c.sections[si]] = [c.sections[si], c.sections[si - 1]]; renderEdBody(); } }, html: ICON.up }),
+    h("button", { class: "ibtn", title: "Move down", onclick: () => { if (si < c.sections.length - 1) { [c.sections[si + 1], c.sections[si]] = [c.sections[si], c.sections[si + 1]]; renderEdBody(); } }, html: ICON.down }),
+    h("button", { class: "ibtn danger", title: "Delete section", onclick: () => { if (confirm("Delete this whole section?")) { c.sections.splice(si, 1); renderEdBody(); } }, html: ICON.trash }));
+  card.append(head);
+  sec.blocks.forEach((blk, bi) => card.append(blockCard(sec, blk, bi)));
+  card.append(h("div", { class: "ed-addblk" },
+    h("button", { class: "btn btn-ghost sm", onclick: () => { sec.blocks.push(newBlock("prose")); renderEdBody(); } },
+      h("span", { html: ICON.plus, style: { display: "inline-flex", width: "13px" } }), "Add block")));
+  return card;
+}
+
+function blockCard(sec, blk, bi) {
+  const card = h("div", { class: "ed-block" });
+  card.append(h("div", { class: "ed-block-top" },
+    ed_sel(blk.type, BLOCK_TYPES, nt => { if (nt !== blk.type) { sec.blocks[bi] = convertBlock(blk, nt); renderEdBody(); } }),
+    h("div", { class: "grow" }),
+    h("button", { class: "ibtn", title: "Move up", onclick: () => { if (bi > 0) { [sec.blocks[bi - 1], sec.blocks[bi]] = [sec.blocks[bi], sec.blocks[bi - 1]]; renderEdBody(); } }, html: ICON.up }),
+    h("button", { class: "ibtn", title: "Move down", onclick: () => { if (bi < sec.blocks.length - 1) { [sec.blocks[bi + 1], sec.blocks[bi]] = [sec.blocks[bi], sec.blocks[bi + 1]]; renderEdBody(); } }, html: ICON.down }),
+    h("button", { class: "ibtn danger", title: "Delete block", onclick: () => { sec.blocks.splice(bi, 1); renderEdBody(); }, html: ICON.trash })));
+  card.append(blockFields(blk));
+  return card;
+}
+function convertBlock(old, type) {
+  const nb = newBlock(type);
+  if ("text" in nb && old.text) nb.text = old.text;
+  if ("caption" in nb && old.caption) nb.caption = old.caption;
+  return nb;
+}
+function blockFields(blk) {
+  const wrap = h("div", { class: "ed-fields" });
+  const F = (label, node) => wrap.append(ed_field(label, node));
+  if (blk.type === "prose" || blk.type === "anchor") F(blk.type === "anchor" ? "Analogy text" : "Text (**bold**, *italic*, ==highlight==)", ed_area(blk.text, v => blk.text = v, 4));
+  else if (blk.type === "heading") F("Heading", ed_text(blk.text, v => blk.text = v));
+  else if (blk.type === "callout") {
+    F("Variant", ed_sel(blk.variant, [["clinical", "Clinical"], ["pitfall", "Pitfall"], ["mnemonic", "Mnemonic"], ["exam", "Exam"]], v => blk.variant = v));
+    F("Title", ed_text(blk.title, v => blk.title = v));
+    F("Text", ed_area(blk.text, v => blk.text = v, 3));
+  } else if (blk.type === "list") {
+    F("Style", ed_sel(blk.ordered ? "ol" : "ul", [["ul", "Bulleted"], ["ol", "Numbered"]], v => blk.ordered = (v === "ol")));
+    F("Items (one per line)", ed_area(ed_lines(blk.items), v => blk.items = ed_arr(v), 4));
+  } else if (blk.type === "flow") {
+    F("Steps (one per line)", ed_area(ed_lines(blk.steps), v => blk.steps = ed_arr(v), 3));
+    F("Note", ed_text(blk.note, v => blk.note = v));
+  } else if (blk.type === "figure") {
+    F("SVG markup", ed_area(blk.svg, v => blk.svg = v, 5));
+    F("Caption", ed_text(blk.caption, v => blk.caption = v));
+  } else if (blk.type === "compare") {
+    const cols = blk.columns || ["", ""];
+    F("Column A", ed_text(cols[0], v => { cols[0] = v; blk.columns = cols; }));
+    F("Column B", ed_text(cols[1], v => { cols[1] = v; blk.columns = cols; }));
+    F("Rows (one per line: label | A | B)", ed_area((blk.rows || []).map(r => (r || []).join(" | ")).join("\n"),
+      v => blk.rows = ed_arr(v).map(line => line.split("|").map(s => s.trim())), 4));
+  } else if (blk.type === "image") {
+    const urlIn = ed_text(blk.url, v => { blk.url = v; prev.src = v || ""; });
+    const prev = h("img", { class: "ed-imgprev", alt: "" }); prev.src = blk.url || "";
+    prev.addEventListener("error", () => prev.classList.add("bad"));
+    const file = h("input", { type: "file", accept: "image/*", style: { display: "none" } });
+    const upBtn = h("button", { class: "btn btn-ghost sm", type: "button" }, h("span", { html: ICON.image, style: { display: "inline-flex", width: "14px" } }), "Upload");
+    upBtn.addEventListener("click", () => file.click());
+    file.addEventListener("change", async () => {
+      const f = file.files && file.files[0]; if (!f) return;
+      upBtn.disabled = true; upBtn.textContent = "Uploading…";
+      try { const url = await DB.uploadImage(f); blk.url = url; urlIn.value = url; prev.src = url; prev.classList.remove("bad"); toast("Image uploaded"); }
+      catch (e) { toast(e?.message || "Upload failed"); }
+      upBtn.disabled = false; upBtn.textContent = "Upload";
+    });
+    F("Image URL", h("div", { class: "ed-imgrow" }, urlIn, upBtn, file));
+    wrap.append(h("div", { class: "ed-imgprevwrap" }, prev));
+    F("Caption", ed_text(blk.caption, v => blk.caption = v));
+    F("Alt text", ed_text(blk.alt, v => blk.alt = v, "Describe the image"));
+    F("Credit (optional)", ed_text(blk.credit, v => blk.credit = v));
+    F("Source / license (optional)", ed_text(blk.source, v => blk.source = v));
+    F("Source URL (optional)", ed_text(blk.pageUrl, v => blk.pageUrl = v));
+  }
+  return wrap;
+}
+function ed_field(label, node) { return h("label", { class: "ed-field" }, h("span", { class: "ed-label" }, label), node); }
+
+function cleanBlock(b) {
+  if (b.type === "prose" || b.type === "anchor" || b.type === "heading") return (b.text || "").trim() ? b : null;
+  if (b.type === "callout") return ((b.title || "").trim() || (b.text || "").trim()) ? b : null;
+  if (b.type === "list") { b.items = (b.items || []).filter(x => x.trim()); return b.items.length ? b : null; }
+  if (b.type === "flow") { b.steps = (b.steps || []).filter(x => x.trim()); return b.steps.length ? b : null; }
+  if (b.type === "figure") return (b.svg || "").trim() ? b : null;
+  if (b.type === "compare") { b.rows = (b.rows || []).filter(r => r.some(x => (x || "").trim())); return b.rows.length ? b : null; }
+  if (b.type === "image") return (b.url || "").trim() ? b : null;
+  return b;
+}
+async function saveEditor() {
+  const c = draft.content;
+  const content = {
+    subtitle: c.subtitle || "", readingTime: Number(c.readingTime) || 5,
+    lenses: (c.lenses || []).filter(k => LENS_OPTS.includes(k)),
+    glance: (c.glance || []).filter(x => x && x.trim()),
+    highYield: (c.highYield || []).filter(x => x && x.trim()),
+    sections: (c.sections || []).map(s => ({
+      lens: s.lens || "physio", title: (s.title || "").trim(),
+      blocks: (s.blocks || []).map(cleanBlock).filter(Boolean),
+    })).filter(s => s.blocks.length || s.title),
+  };
+  try { await DB.updateLesson(draft.lessonId, { content }); toast("Lesson content saved"); draft = null; go("section"); }
+  catch (e) { toast(e?.message || "Save failed"); }
 }
 
 /* ---------- checklist import ---------- */
