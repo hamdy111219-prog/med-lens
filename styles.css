@@ -817,3 +817,32 @@ body[data-studymode="memorize"] .topic-head h2 { margin-bottom: 4px; }
 }
 .lens ul.tidy li > ul.tidy li, .lens ol.tidy li > ul.tidy li,
 .lens ul.tidy li > ol.tidy li, .lens ol.tidy li > ol.tidy li { font-size: .96em; }
+
+/* ---------- Flashcards mode ---------- */
+body[data-studymode="flashcards"] .glance,
+body[data-studymode="flashcards"] .hybox,
+body[data-studymode="flashcards"] .toc { display: none; }
+body[data-studymode="flashcards"] .chapbody { grid-template-columns: 1fr; }
+.flashwrap { max-width: 620px; margin: 8px auto 0; }
+.flash-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.flash-type { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); border: 1px solid var(--line); }
+.flash-type.type-pitfall { color: var(--patho); border-color: color-mix(in srgb, var(--patho) 35%, var(--line)); }
+.flash-type.type-clinical { color: var(--micro); border-color: color-mix(in srgb, var(--micro) 35%, var(--line)); }
+.flash-type.type-mechanism { color: var(--physio); border-color: color-mix(in srgb, var(--physio) 35%, var(--line)); }
+.flash-type.type-cloze { color: var(--pharm); border-color: color-mix(in srgb, var(--pharm) 35%, var(--line)); }
+.flash-count { font-size: .8rem; color: var(--ink-faint); font-family: var(--f-mono); }
+.flashcard { position: relative; border: 1px solid var(--line); border-left: 4px solid var(--c, var(--brand));
+  border-radius: 16px; background: var(--surface); box-shadow: var(--shadow-md);
+  min-height: 260px; padding: 26px 26px 46px; cursor: pointer; display: flex; flex-direction: column; justify-content: center;
+  transition: transform .12s ease, box-shadow .12s ease; }
+.flashcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg, var(--shadow-md)); }
+.flashcard.flipped { background: color-mix(in srgb, var(--c, var(--brand)) 6%, var(--surface)); }
+.flash-side { position: absolute; top: 16px; left: 26px; font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+  font-weight: 700; color: var(--c, var(--brand)); }
+.flash-body { font-size: 1.18rem; line-height: 1.5; color: var(--ink); text-align: center; }
+.flashcard.flipped .flash-body { font-size: 1.05rem; }
+.flash-hint { position: absolute; bottom: 16px; left: 0; right: 0; text-align: center; font-size: .72rem; color: var(--ink-faint); }
+.flash-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; }
+.flash-nav .btn { min-width: 120px; }
+.flash-nav .btn:disabled { opacity: .4; cursor: default; }

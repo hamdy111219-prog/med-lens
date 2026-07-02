@@ -95,6 +95,7 @@ const ICON = {
   image: '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><circle cx="8.5" cy="10" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M5 17l4.5-4 3 2.5L16 12l3 3" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
   grip: '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>',
   list: '<svg viewBox="0 0 24 24" fill="none"><path d="M8 6h12M8 12h12M8 18h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="4" cy="6" r="1.3" fill="currentColor"/><circle cx="4" cy="12" r="1.3" fill="currentColor"/><circle cx="4" cy="18" r="1.3" fill="currentColor"/></svg>',
+  cards: '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="13" height="14" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 4.5h10.5A1.5 1.5 0 0 1 20 6v11.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
 };
 
 function toast(msg) {
@@ -182,6 +183,11 @@ function confirmModal(title, message, onYes, danger = true) {
   yes.addEventListener("click", async () => { yes.disabled = true; yes.textContent = "Deleting…"; try { await onYes(); closeModal(); } catch (ex) { yes.disabled = false; yes.textContent = "Delete"; toast(ex?.message || "Failed"); } });
   openModal(title, [h("p", { style: { color: "var(--ink-soft)", lineHeight: "1.55", margin: "2px 0" } }, message)],
     [h("button", { class: "btn btn-ghost", onclick: closeModal }, "Cancel"), yes]);
+}
+
+function infoModal(title, message) {
+  openModal(title, [h("p", { style: { color: "var(--ink-soft)", lineHeight: "1.55", margin: "2px 0" } }, message)],
+    [h("button", { class: "btn btn-primary", onclick: closeModal }, "Got it")]);
 }
 
 /* ---------- app state + navigation ---------- */
@@ -334,6 +340,8 @@ async function viewSection() {
     genBtn.addEventListener("click", () => generateFor(l, genBtn));
     const bulBtn = h("button", { class: "ibtn" + (l.bullets ? " on" : ""), title: l.bullets ? "Rebuild study bullets" : "Make study bullets", html: ICON.list });
     bulBtn.addEventListener("click", () => makeBulletsFor(l, bulBtn));
+    const cardBtn = h("button", { class: "ibtn" + (l.cards ? " on" : ""), title: l.cards ? "Rebuild flashcards" : "Make flashcards", html: ICON.cards });
+    cardBtn.addEventListener("click", () => makeFlashcardsFor(l, cardBtn));
 
     const row = h("div", { class: "drow" },
       h("span", { class: "drag", title: "Drag to reorder", html: ICON.grip }),
@@ -352,6 +360,7 @@ async function viewSection() {
         h("button", { class: "ibtn", title: "Move down", onclick: () => arrowMove("lessons", lesIds, l.id, 1), html: ICON.down }),
         genBtn,
         hasContent ? bulBtn : null,
+        hasContent ? cardBtn : null,
         hasContent ? h("a", { class: "ibtn", title: "View lesson", target: "_blank", rel: "noopener", href: "lesson.html?slug=" + encodeURIComponent(l.slug), html: ICON.eye }) : null,
         hasContent ? h("button", { class: "ibtn", title: "Edit content", onclick: () => openLessonEditor(l), html: ICON.layers }) : null,
         hasContent ? h("button", { class: "ibtn" + (l.published ? " on" : ""), title: l.published ? "Unpublish" : "Publish", onclick: () => togglePublishLesson(l), html: ICON.globe }) : null,
@@ -361,6 +370,14 @@ async function viewSection() {
     panel.append(row);
   });
   view.append(panel);
+}
+
+async function makeFlashcardsFor(l, btn) {
+  if (!l.content) { toast("Generate the lesson first"); return; }
+  const prev = btn.innerHTML; btn.disabled = true; btn.classList.add("busy");
+  toast(MODE === "demo" ? "Building flashcards…" : "Building flashcards… (~1 min)");
+  try { await DB.makeFlashcards(l.id); toast("Flashcards ready"); render(); }
+  catch (e) { toast(e?.message || "Couldn't build flashcards"); btn.disabled = false; btn.classList.remove("busy"); btn.innerHTML = prev; }
 }
 
 async function makeBulletsFor(l, btn) {
@@ -436,23 +453,34 @@ function editSection(s) {
     }
   });
 }
-function removeSection(s) {
-  confirmModal("Delete section?", `“${s.title}” and all of its lessons will be permanently removed.`, async () => { await DB.deleteSection(s.id); toast("Section deleted"); render(); });
+async function removeSection(s) {
+  const lessons = await DB.listLessons(s.id);
+  if (lessons.length) {
+    infoModal("Section not empty",
+      `“${s.title}” still has ${lessons.length} lesson${lessons.length === 1 ? "" : "s"}. Move them to another section (Edit lesson → Section) or delete them first, then you can remove this section.`);
+    return;
+  }
+  confirmModal("Delete section?", `“${s.title}” will be permanently removed.`, async () => { await DB.deleteSection(s.id); toast("Section deleted"); render(); });
 }
-function editLesson(l) {
+async function editLesson(l) {
+  const chapterId = state.chapterId || (state.chapter && state.chapter.id);
+  const sections = chapterId ? await DB.listSections(chapterId) : [];
+  const secOptions = sections.map(s => ({ value: s.id, label: (s.numeral ? s.numeral + " · " : "") + s.title }));
+  const curSection = l ? l.section_id : state.sectionId;
   formModal({
     title: l ? "Edit lesson" : "New lesson",
     fields: [
       { name: "title", label: "Title", placeholder: "e.g. Action Potentials" },
       { name: "slug", label: "Slug", hint: "Optional — for the lesson page URL.", placeholder: "action-potentials" },
+      ...(secOptions.length ? [{ name: "section_id", label: "Section", type: "select", options: secOptions, hint: "Move this lesson to another section (drops it at the end; drag to reorder)." }] : []),
       { name: "lenses", label: "Discipline lenses", type: "lenses" },
       { name: "high_yield", label: "High-yield (⭐)", type: "select", options: [{ value: "no", label: "No" }, { value: "yes", label: "Yes — high-yield" }] },
       { name: "must_cover_text", label: "Must-cover points", type: "textarea", hint: "One point per line. Generation covers every point and builds the high-yield box from them." },
       { name: "state", label: "Status", type: "select", options: STATES.map(x => ({ value: x.key, label: x.label })) },
     ],
     values: l
-      ? { ...l, high_yield: l.high_yield ? "yes" : "no", must_cover_text: (l.must_cover || []).join("\n") }
-      : { state: "new", lenses: [], high_yield: "no", must_cover_text: "" },
+      ? { ...l, section_id: curSection, high_yield: l.high_yield ? "yes" : "no", must_cover_text: (l.must_cover || []).join("\n") }
+      : { state: "new", section_id: curSection, lenses: [], high_yield: "no", must_cover_text: "" },
     onSave: async raw => {
       const v = {
         title: raw.title, slug: raw.slug, lenses: raw.lenses, state: raw.state,
@@ -460,8 +488,14 @@ function editLesson(l) {
         must_cover: (raw.must_cover_text || "").split("\n").map(s => s.trim()).filter(Boolean),
       };
       if (!v.slug) v.slug = slugify(v.title);
-      if (l) { await DB.updateLesson(l.id, v); toast("Lesson saved"); }
-      else { await DB.createLesson(state.sectionId, v); toast("Lesson added"); }
+      if (l) {
+        await DB.updateLesson(l.id, v);
+        if (raw.section_id && raw.section_id !== l.section_id) await DB.moveLesson(l.id, raw.section_id);
+        toast("Lesson saved");
+      } else {
+        await DB.createLesson(raw.section_id || state.sectionId, v);
+        toast("Lesson added");
+      }
       render();
     }
   });

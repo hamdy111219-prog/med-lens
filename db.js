@@ -71,7 +71,7 @@ function freshStore() {
       for (const l of s.lessons) {
         lessons.push({ id: uid(), section_id: sid, title: l.title, slug: l.slug,
           lenses: (l.lenses || []).slice(), state: l.state, order_index: l.order_index,
-          published: false, high_yield: false, must_cover: [], content: null, bullets: null });
+          published: false, high_yield: false, must_cover: [], content: null, bullets: null, cards: null });
       }
     }
   }
@@ -228,7 +228,7 @@ export async function createLesson(sectionId, p) {
     high_yield: !!p.high_yield, must_cover: p.must_cover || [] };
   if (MODE === "demo") {
     const sibs = store.lessons.filter(l => l.section_id === sectionId);
-    const r = { id: uid(), order_index: nextOrder(sibs), published: false, content: null, bullets: null, ...row };
+    const r = { id: uid(), order_index: nextOrder(sibs), published: false, content: null, bullets: null, cards: null, ...row };
     store.lessons.push(r); saveStore(); return r;
   }
   const sibs = await listLessons(sectionId); row.order_index = nextOrder(sibs);
@@ -380,6 +380,61 @@ export async function generateLesson(lessonId, name, currentLenses, mustCover) {
     if (row && row.content && row.updated_at !== prevUpdated) return { content: row.content, slug: row.slug };
   }
   throw new Error("Still generating — give it a moment, then refresh the page to see it.");
+}
+
+// Build flashcards from the already-generated lesson.
+export async function makeFlashcards(lessonId) {
+  if (MODE === "demo") {
+    await new Promise(r => setTimeout(r, 700));
+    const l = store.lessons.find(x => x.id === lessonId);
+    if (!l || !l.content) throw new Error("Generate the lesson first.");
+    const cards = sampleCards(l.content);
+    await updateLesson(lessonId, { cards });
+    return cards;
+  }
+  const before = await supabase.from("lessons").select("updated_at").eq("id", lessonId).single();
+  const prevUpdated = before.data ? before.data.updated_at : null;
+  const { data, error } = await supabase.functions.invoke("generate-lesson", { body: { lessonId, mode: "flashcards" } });
+  if (error) throw new Error(error.message || "Flashcards request failed");
+  if (data && data.error) throw new Error(data.error);
+  const start = Date.now();
+  while (Date.now() - start < 130000) {
+    await new Promise(r => setTimeout(r, 3000));
+    const { data: row } = await supabase.from("lessons").select("updated_at, cards").eq("id", lessonId).single();
+    if (row && row.cards && row.updated_at !== prevUpdated) return row.cards;
+  }
+  throw new Error("Still working — give it a moment, then refresh.");
+}
+
+// Demo-only: synth a few flashcards from content for preview.
+function sampleCards(content) {
+  const cards = [];
+  (content.sections || []).forEach(s => {
+    const prose = (s.blocks || []).find(b => b.type === "prose");
+    if (prose) {
+      const first = (prose.text || "").replace(/[*=]/g, "").split(/(?<=[.!?])\s+/)[0];
+      if (first) cards.push({ front: `${s.title}: what's the core idea?`, back: first, lens: s.lens, type: "concept" });
+    }
+    (s.blocks || []).filter(b => b.type === "callout").forEach(cb => {
+      cards.push({ front: (cb.title || "Key point") + "?", back: (cb.text || "").replace(/[*=]/g, ""), lens: s.lens,
+        type: cb.variant === "pitfall" ? "pitfall" : cb.variant === "mnemonic" ? "mnemonic" : "clinical" });
+    });
+  });
+  return cards.slice(0, 14);
+}
+
+// Move a lesson to another section (drops it at the end of the target).
+export async function moveLesson(lessonId, newSectionId) {
+  if (MODE === "demo") {
+    const r = store.lessons.find(l => l.id === lessonId);
+    if (!r) return;
+    const sibs = store.lessons.filter(l => l.section_id === newSectionId && l.id !== lessonId);
+    r.section_id = newSectionId; r.order_index = nextOrder(sibs); saveStore(); return r;
+  }
+  const sibs = await listLessons(newSectionId);
+  const oi = nextOrder(sibs.filter(l => l.id !== lessonId));
+  const { data, error } = await supabase.from("lessons").update({ section_id: newSectionId, order_index: oi }).eq("id", lessonId).select().single();
+  if (error) throw error; return data;
 }
 
 // Build the memorization "bullets" version from the already-generated lesson.
